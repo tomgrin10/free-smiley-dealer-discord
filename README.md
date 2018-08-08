@@ -7,3 +7,5 @@ Modules needed:
 - emoji
 
 To use this bot just edit the config file and run!
+
+*Note: The emoji codes in "smileys.json" are global emoji codes, not discord ones. There is a difference!*
