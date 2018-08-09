@@ -279,6 +279,24 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476922626900623362/ezgif-3-c23903d9c6.gif"
             ]
+        },
+        {
+            "paid_smileys": [":exclamation:", ":grey_exclamation:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/477195330593488926/ezgif-3-5eadf88eea.png"
+            ]
+        },
+        {
+            "paid_smileys": [":innocent:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/471078406914834432/477196805155848212/ezgif-3-f9c22091be.jpg"
+            ]
+        },
+        {
+            "paid_smileys": [":trophy:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/477242205782802442/ezgif-3-e2314e6ed5.gif"
+            ]
         }
     ]
 }
