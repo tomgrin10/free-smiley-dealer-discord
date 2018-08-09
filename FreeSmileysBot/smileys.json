@@ -133,7 +133,7 @@
         {
             "paid_smileys": [":thinking_face:"],
             "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476420736144375814/ezgif-3-7a2fe7412f.png"
+                "https://cdn.discordapp.com/attachments/476864438000025616/476921538747170816/ezgif-3-8dcc921be6.png"
             ]
         },
         {
@@ -256,6 +256,12 @@
             "paid_smileys": [":mantelpiece_clock:", ":alarm_clock:", ":timer_clock:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476912768981663755/ezgif-3-86c9aa65c1.png"
+            ]
+        },
+        {
+            "paid_smileys": [":face_with_rolling_eyes:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/476922626900623362/ezgif-3-c23903d9c6.gif"
             ]
         }
     ]
