@@ -69,7 +69,8 @@
                 "https://cdn.discordapp.com/attachments/476402937808027658/476412857106300928/Webp.net-resizeimage_2.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476412860931637269/Webp.net-resizeimage_3.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476412863846547456/Webp.net-resizeimage_4.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476412863687163917/Webp.net-resizeimage_5.gif"
+                "https://cdn.discordapp.com/attachments/476402937808027658/476412863687163917/Webp.net-resizeimage_5.gif",
+                "https://cdn.discordapp.com/attachments/476864438000025616/476908463381807110/ezgif-3-0acb1d2844.gif"
             ]
         },
         {
@@ -186,7 +187,7 @@
         {
             "paid_smileys": [":thumbsup:"],
             "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476429125658083349/Webp.net-resizeimage.png"
+                "https://cdn.discordapp.com/attachments/470348363871551489/476834107024867368/Webp.net-resizeimage_1.png"
             ]
         },
         {
@@ -206,6 +207,55 @@
             "paid_smileys": [":toilet:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476403967795134465/ezgif-1-ee792a4817.gif"
+            ]
+        },
+        {
+            "paid_smileys": [":skull:", ":skull_and_crossbones:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/256054465898086400/476855696202268690/ezgif-3-fcf76ac03f.gif"
+            ]
+        },
+        {
+            "paid_smileys": [
+                ":crescent_moon:", ":first_quarter_moon:", ":first_quarter_moon_with_face:",
+                ":full_moon:", ":full_moon_with_face:", ":last_quarter_moon:",
+                ":last_quarter_moon_with_face:", ":new_moon:", ":new_moon_with_face:",
+                ":waning_crescent_moon:", ":waning_gibbous_moon:", ":waxing_crescent_moon:",
+                ":waxing_gibbous_moon:"
+            ],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/256054465898086400/476859463819591712/ezgif-3-36ea703d58.gif"
+            ]
+        },
+        {
+            "paid_smileys": [":couple:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/256054465898086400/476862820160372765/ezgif-3-940027df3e.gif"
+            ]
+        },
+        {
+            "paid_smileys": [":couple_mm:", ":couple_with_heart:", ":couple_ww:", ":couplekiss:", ":kiss_mm:", ":kiss_ww:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/256054465898086400/476863229755392033/ezgif-3-3c7601433c.gif"
+            ]
+        },
+        {
+            "paid_smileys": [":basketball:", ":person_bouncing_ball:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/476908197660327957/www_free-smiley-faces_de_free-animated-emoticons_200x200.gif"
+            ]
+        },
+        {
+            "paid_smileys": [":radioactive:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/476910765501186058/ezgif-3-7425805789.jpg",
+                "https://cdn.discordapp.com/attachments/476864438000025616/476910777085853709/ezgif-3-4f51437557.jpg"
+            ]
+        },
+        {
+            "paid_smileys": [":mantelpiece_clock:", ":alarm_clock:", ":timer_clock:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/476912768981663755/ezgif-3-86c9aa65c1.png"
             ]
         }
     ]
