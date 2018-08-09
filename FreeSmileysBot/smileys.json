@@ -5,14 +5,30 @@
         "Fuck off with your paid smileys.",
         "This smiley is better than your paid shit.",
         "Paid smileys are unepic.",
-        "Free smileys are very epic."
+        "Free smileys are very epic.",
+        "I get my smileys only on http://free-smiley.de",
+        "Why pay for smileys when you can get them for free.",
+        "You should get your smileys freely from http://free-smiley.de",
+        "What an idiot, he is paying for smileys."
     ],
-    "help": "I will correct you when you use paid smileys.",
+    "help": "If you use regular (paid) smileys in your message, I will correct you.\nTry it out, type `:heart_eyes:`.",
     "smileys": [
         {
-            "paid_smileys": [":slightly_smiling:", ":smile:"],
+            "paid_smileys": [":slightly_smiling_face:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/256054465898086400/476404616712552448/ezgif-3-1e61f25d5f.png"
+            ]
+        },
+        {
+            "paid_smileys": [":smile:", ":smile_cat:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/470348363871551489/477158481703600129/ezgif-3-b22acb58a6.png"
+            ]
+        },
+        {
+            "paid_smileys": [":smiley:", ":smiley_cat:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/477156387093348354/ezgif-3-6be819019f.gif"
             ]
         },
         {

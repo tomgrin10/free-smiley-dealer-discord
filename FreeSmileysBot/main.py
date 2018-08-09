@@ -9,7 +9,10 @@ with open("config.json") as f:
     config = json.load(f)
 
 client: discord.Client = discord.Client()
-bot: commands.Bot = commands.Bot(command_prefix=config["prefix"])
+bot: commands.Bot = commands.Bot(
+    command_prefix=commands.when_mentioned_or(config["prefix"]),
+)
+bot.remove_command("help")
 
 with open(config["data_filename"], 'r') as f:
     smileys_data = json.load(f)
@@ -25,9 +28,6 @@ async def on_ready():
 
 @bot.event
 async def on_message(message: discord.Message):
-    # Send help
-    if message.content.startswith(bot.command_prefix) or message.content.startswith(f"<@{bot.user.id}>"):
-        await send_help(message.channel)
 
     # Iterate every record
     for record in smileys_data["smileys"]:
@@ -45,6 +45,14 @@ async def on_message(message: discord.Message):
 
                 return
 
+    await bot.process_commands(message)
+
+
+@bot.command(pass_context=True, name="help", aliases=["h"])
+async def command_help(ctx: commands.Context):
+    print("help")
+    await bot.say(f"<@{ctx.message.author.id}>\n{smileys_data['help']}")
+
 
 # Reload data every once in a while
 async def reload_data():
@@ -54,10 +62,6 @@ async def reload_data():
         with open(config["data_filename"], 'r') as f:
             smileys_data = json.load(f)
         print("Reloaded data.")
-
-
-async def send_help(channel: discord.Channel):
-    await bot.send_message(channel, smileys_data["help"])
 
 
 bot.loop.create_task(reload_data())
