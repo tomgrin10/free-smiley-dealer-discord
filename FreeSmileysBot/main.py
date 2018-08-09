@@ -34,7 +34,7 @@ async def on_message(message: discord.Message):
         # Iterate every paid smiley
         for p_smiley in record["paid_smileys"]:
             # Search for paid smiley in message
-            if emoji.emojize(p_smiley) in message.content:
+            if emoji.emojize(p_smiley, use_aliases=True) in message.content:
                 print(message.content + " detected.")
                 # Create the embed
                 title = random.choice(smileys_data["titles"])
@@ -50,7 +50,7 @@ async def on_message(message: discord.Message):
 async def reload_data():
     global smileys_data
     while True:
-        await asyncio.sleep(5)
+        await asyncio.sleep(500)
         with open(config["data_filename"], 'r') as f:
             smileys_data = json.load(f)
         print("Reloaded data.")
