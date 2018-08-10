@@ -297,6 +297,12 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/477242205782802442/ezgif-3-e2314e6ed5.gif"
             ]
+        },
+        {
+            "paid_smileys": [":peach:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/477249766250643481/477276904571797504/ezgif-3-461c21a935.png"
+            ]
         }
     ]
 }
