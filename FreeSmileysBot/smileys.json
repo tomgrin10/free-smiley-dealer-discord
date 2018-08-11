@@ -303,6 +303,12 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/477249766250643481/477276904571797504/ezgif-3-461c21a935.png"
             ]
+        },
+        {
+            "paid_smileys": [":cowboy:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/477984358922452992/emote_waifu2x_art_noise1_scale_tta_1.png"
+            ]
         }
     ]
 }
