@@ -38,10 +38,10 @@ async def on_message(message: discord.Message):
                 print(message.content + " detected.")
                 # Create the embed
                 title = random.choice(smileys_data["titles"])
-                embed = discord.Embed(title=title, description=f"<@{message.author.id}>")
+                embed = discord.Embed(title=title)
                 free_smiley_url = random.choice(record["free_smileys"])
                 embed.set_image(url=free_smiley_url)
-                await bot.send_message(message.channel, embed=embed)
+                await bot.send_message(message.channel, content=f"<@{message.author.id}>", embed=embed)
 
                 return
 
