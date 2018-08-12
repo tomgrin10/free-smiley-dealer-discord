@@ -309,6 +309,13 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/477984358922452992/emote_waifu2x_art_noise1_scale_tta_1.png"
             ]
+        },
+        {
+            "paid_smileys": [":birthday_cake:"],
+            "free_smileys": [
+                "https://cdn.discordapp.com/attachments/476864438000025616/477994160943529984/ezgif-3-541d3b0784.gif",
+                "https://cdn.discordapp.com/attachments/476864438000025616/477994163468501006/ezgif-3-6a16d10dc3.gif"
+            ]
         }
     ]
 }
