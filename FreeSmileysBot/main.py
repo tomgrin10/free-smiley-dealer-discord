@@ -22,7 +22,6 @@ with open(config["data_filename"], 'r') as f:
 async def on_ready():
     await bot.change_presence(game=discord.Game(name=config["game"]))
     print("Bot is ready.")
-    print(smileys_data)
     print([s.name for s in bot.servers])
 
 
