@@ -1,5 +1,6 @@
 
 FreeSmileysBot/\.idea/
 
-/images
 FreeSmileysBot/token\.json
+
+FreeSmileysBot/test\.py

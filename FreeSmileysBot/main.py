@@ -4,6 +4,7 @@ import asyncio
 import json
 import random
 import time
+import tldextract
 
 # Constants
 TOKEN_FILENAME = "token.json"
@@ -55,9 +56,13 @@ async def on_message(message: discord.Message):
 
             print(message.content + " detected.")
 
-            # Create the embed
+            # Get parameters for embed
             title = random.choice(DATA["titles"])
             free_smiley_url = random.choice(record["free_smileys"])
+            if tldextract.extract(free_smiley_url).domain == "sirv":
+                free_smiley_url += "?scale.height=150"
+
+            # Create the embed
             embed = discord.Embed(title=title)
             embed.set_image(url=free_smiley_url)
             await bot.send_message(message.channel, content=f"<@{message.author.id}>", embed=embed)
@@ -93,10 +98,9 @@ async def command_smiley(ctx: commands.Context, emoji_name_message: str):
         free_smiley_url = random.choice(record["free_smileys"])
         embed = discord.Embed()
         embed.set_image(url=free_smiley_url)
-        await bot.send_message(ctx.message.channel, content=f"<@{ctx.message.author.id}>", embed=embed)
+        await bot.send_message(ctx.message.channel, embed=embed)
 
         return
-
 
 
 # Reload data every once in a while

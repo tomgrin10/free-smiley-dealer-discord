@@ -135,7 +135,7 @@
             ]
         },
         {
-            "paid_smileys": ["nauseated_face"],
+            "paid_smileys": ["nauseated_face", "puke"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476419852421038081/Webp.net-resizeimage.gif"
             ]
@@ -167,7 +167,7 @@
             ]
         },
         {
-            "paid_smileys": ["laughing"],
+            "paid_smileys": ["laughing", "haha"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476424656505667594/Webp.net-resizeimage.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476427670280994816/Webp.net-resizeimage_1.gif",
