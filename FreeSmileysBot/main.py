@@ -27,7 +27,7 @@ if pathlib.Path("/path/to/file").is_file():
         DYNAMIC_DATA = json.load(f)
 else:
     with open(DYNAMIC_DATA_FILENAME, 'w') as f:
-        DYNAMIC_DATA = dict()
+        DYNAMIC_DATA = {"sizes": {}}
         json.dump(DYNAMIC_DATA, f, indent=4)
 DYNAMIC_DATA_LOCK = asyncio.Lock()
 
