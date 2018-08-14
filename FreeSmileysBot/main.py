@@ -70,7 +70,14 @@ async def on_message(message: discord.Message):
 @bot.command(pass_context=True, name="help", aliases=["h"])
 async def command_help(ctx: commands.Context):
     print("help")
-    await bot.say(f"<@{ctx.message.author.id}>\n{DATA['help']}")
+    # "help": "\n",
+    await bot.say(f"""
+<@{ctx.message.author.id}>
+If you use regular (paid) smileys in your message, I will correct you.
+Try it out, type `:joy:`.
+You can also use the command `s!s` with the paid smiley name, example `s!s joy`.
+Support server here: https://discord.gg/2XCVVx
+    """)
 
 
 @bot.command(pass_context=True, name="smiley", aliases=["s"])
