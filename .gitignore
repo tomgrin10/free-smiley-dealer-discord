@@ -1,6 +1,5 @@
 
 FreeSmileysBot/\.idea/
 
-FreeSmileysBot/config\.json
-
 /images
+FreeSmileysBot/token\.json

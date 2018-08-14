@@ -1,4 +1,7 @@
 {
+    "prefix": "s!",
+    "game": "with his free smileys",
+    "help": "If you use regular (paid) smileys in your message, I will correct you.\nTry it out, type `:heart_eyes:`.\nSupport server here: https://discord.gg/2XCVVx",
     "titles": [
         "Only free smileys here.",
         "No paid smileys in my server.",
@@ -10,10 +13,9 @@
         "You should get your smileys freely from http://free-smiley.de",
         "Look at him, he is paying for smileys!"
     ],
-    "help": "If you use regular (paid) smileys in your message, I will correct you.\nTry it out, type `:heart_eyes:`.",
     "smileys": [
         {
-            "paid_smileys": [":slightly_smiling_face:"],
+            "paid_smileys": [":slight_smile:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/256054465898086400/476404616712552448/ezgif-3-1e61f25d5f.png"
             ]
@@ -38,7 +40,7 @@
             ]
         },
         {
-            "paid_smileys": [":sun:", ":sun_with_face:"],
+            "paid_smileys": [":sunny:", ":sun_with_face:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476407111002095647/Webp.net-resizeimage.png"
             ]
@@ -107,7 +109,7 @@
             ]
         },
         {
-            "paid_smileys": [":hugging_face:"],
+            "paid_smileys": [":hugging:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476417213331668992/Webp.net-resizeimage.png"
             ]
@@ -127,7 +129,7 @@
             ]
         },
         {
-            "paid_smileys": [":pig:", ":pig_face:", ":pig_nose:"],
+            "paid_smileys": [":pig:", ":pig2:", ":pig_nose:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476419296638271514/2027b775-5b28-4036-9f88-4de68dd6b872.png",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476419322647019520/www.free-smiley-faces.de_104_smiley-icons_waifu2x_photo_scale_tta_1.png"
@@ -147,7 +149,7 @@
             ]
         },
         {
-            "paid_smileys": [":thinking_face:"],
+            "paid_smileys": [":thinking:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476921538747170816/ezgif-3-8dcc921be6.png"
             ]
@@ -175,7 +177,7 @@
             ]
         },
         {
-            "paid_smileys": [":rolling_on_the_floor_laughing:"],
+            "paid_smileys": [":rofl:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476424989885595659/Webp.net-resizeimage_1.gif"
             ]
@@ -195,7 +197,7 @@
             ]
         },
         {
-            "paid_smileys": [":bust_in_silhouette:", ":detective:"],
+            "paid_smileys": [":spy:", ":bust_in_silhouette:", ":busts_in_silhouette:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476428962952904705/Webp.net-resizeimage.jpg"
             ]
@@ -207,13 +209,13 @@
             ]
         },
         {
-            "paid_smileys": [":peace_symbol:"],
+            "paid_smileys": [":peace:", ":dove:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476429384186855425/Webp.net-resizeimage_1.jpg"
             ]
         },
         {
-            "paid_smileys": [":astonished:", ":scream:"],
+            "paid_smileys": [":astonished:", ":scream:", ":scream_cat:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476430362222919682/Webp.net-resizeimage.png",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476431569536417804/www.free-smiley-faces.de_a13_smiley-icons_waifu2x_photo_scale_tta_1.png"
@@ -226,7 +228,7 @@
             ]
         },
         {
-            "paid_smileys": [":skull:", ":skull_and_crossbones:"],
+            "paid_smileys": [":skull:", ":skull_crossbones:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/256054465898086400/476855696202268690/ezgif-3-fcf76ac03f.gif"
             ]
@@ -256,7 +258,7 @@
             ]
         },
         {
-            "paid_smileys": [":basketball:", ":person_bouncing_ball:"],
+            "paid_smileys": [":basketball:", ":basketball_player:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476908197660327957/www_free-smiley-faces_de_free-animated-emoticons_200x200.gif"
             ]
@@ -269,13 +271,21 @@
             ]
         },
         {
-            "paid_smileys": [":mantelpiece_clock:", ":alarm_clock:", ":timer_clock:"],
+            "paid_smileys": [
+                ":clock:", ":alarm_clock:", ":timer:",
+                ":clock1130:", ":clock3:", ":clock1:", ":clock10:",
+                ":clock1030:", ":clock11:", ":clock12:", ":clock1230:",
+                ":clock130:", ":clock2:", ":clock230:", ":clock330:",
+                ":clock4:", ":clock430:", ":clock5:", ":clock530:",
+                ":clock6:", ":clock630:", ":clock7:", ":clock730:",
+                ":clock8:", ":clock830:", ":clock9:", ":clock930:"
+            ],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476912768981663755/ezgif-3-86c9aa65c1.png"
             ]
         },
         {
-            "paid_smileys": [":face_with_rolling_eyes:"],
+            "paid_smileys": [":rolling_eyes:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476922626900623362/ezgif-3-c23903d9c6.gif"
             ]
@@ -305,13 +315,13 @@
             ]
         },
         {
-            "paid_smileys": [":cowboy_hat_face:"],
+            "paid_smileys": [":cowboy:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/477984358922452992/emote_waifu2x_art_noise1_scale_tta_1.png"
             ]
         },
         {
-            "paid_smileys": [":birthday_cake:"],
+            "paid_smileys": [":birthday:"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/477994160943529984/ezgif-3-541d3b0784.gif",
                 "https://cdn.discordapp.com/attachments/476864438000025616/477994163468501006/ezgif-3-6a16d10dc3.gif"
