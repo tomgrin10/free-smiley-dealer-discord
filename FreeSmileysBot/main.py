@@ -5,6 +5,7 @@ import json
 import random
 import time
 import tldextract
+import pathlib
 
 # Constants
 TOKEN_FILENAME = "token.json"
@@ -21,9 +22,14 @@ with open(STATIC_DATA_FILENAME, 'r') as f:
 with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
     DISCORD_CODE_TO_EMOJI = json.load(f)
     DISCORD_EMOJI_TO_CODE = {v: k for k, v in DISCORD_CODE_TO_EMOJI.items()}
-with open(DYNAMIC_DATA_FILENAME, 'r') as f:
-    DYNAMIC_DATA = json.load(f)
-    DYNAMIC_DATA_LOCK = asyncio.Lock()
+if pathlib.Path("/path/to/file").is_file():
+    with open(DYNAMIC_DATA_FILENAME, 'r') as f:
+        DYNAMIC_DATA = json.load(f)
+else:
+    with open(DYNAMIC_DATA_FILENAME, 'w') as f:
+        DYNAMIC_DATA = dict()
+        json.dump(DYNAMIC_DATA, f, indent=4)
+DYNAMIC_DATA_LOCK = asyncio.Lock()
 
 # Connect to discord
 client: discord.Client = discord.Client()
@@ -39,6 +45,8 @@ def format_smiley_url(url: str, server_id) -> str:
             return url + f"?scale.height={DYNAMIC_DATA['sizes'][server_id]}"
         else:
             return url + f"?scale.height={DEFAULT_SMILEY_SIZE}"
+    else:
+        return url
 
 
 @bot.event

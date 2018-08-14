@@ -4,3 +4,5 @@ FreeSmileysBot/\.idea/
 FreeSmileysBot/token\.json
 
 FreeSmileysBot/test\.py
+
+FreeSmileysBot/dynamic_data\.json
