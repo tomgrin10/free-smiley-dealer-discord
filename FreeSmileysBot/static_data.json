@@ -1,7 +1,7 @@
 {
     "prefix": "s!",
-    "game": "with his free smileys",
-    "help": "If you use :thumbsdown:**paid smileys (emojis)**:thumbsdown: in your message, I will correct you.\n**Try it out!** Type `:joy:`\n\nIf you just want to get :thumbsup:**free smileys**:thumbsup:  type `s!s` with the paid smiley name.\n**Try it out!** Type `s!s joy`\n\nIf you want to :heavy_plus_sign:**change the size**:heavy_plus_sign: of smileys, use `s!size` or `s!height`.\n**Try it out!** Type `s!size 200` (If you have `Manage Channels` permission)(default: `150`)\n\nSupport server here: https://discord.gg/2XCVVx",
+    "game": "with free smileys | s!help",
+    "help": "If you use :thumbsdown:**paid smileys (emojis)**:thumbsdown: in your message, I will correct you.\n**Try it out!** Type `:joy:`\n\nIf you just want to get :thumbsup:**free smileys**:thumbsup:  type `s!s` with the paid smiley name.\n**Try it out!** Type `s!s joy`\n\nIf you want to :heavy_plus_sign:**change the size**:heavy_plus_sign: of smileys, use `s!size` or `s!height`.\n**Try it out!** Type `s!size 200` (If you have `Manage Channels` permission) (default: `150`)\n\nSupport server here: https://discord.gg/2XCVVx",
     "titles": [
         "Only free smileys here.",
         "No paid smileys in my server.",
@@ -13,28 +13,13 @@
         "You should get your smileys freely from http://free-smiley.de",
         "Look at him, he is paying for smileys!"
     ],
+    "base_url": "https://lusaustr.sirv.com/smileys",
     "smileys": [
-        {
-            "paid_smileys": ["slight_smile"],
-            "free_smileys": [
-                "https://lusaustr.sirv.com/smileys/slight_smile/slight_smile.png",
-                "https://lusaustr.sirv.com/smileys/slight_smile/slight_smile1.png",
-                "https://lusaustr.sirv.com/smileys/slight_smile/slight_smile2.png"
-            ]
-        },
-        {
-            "paid_smileys": ["smile", "smile_cat"],
-            "free_smileys": [
-                "https://lusaustr.sirv.com/smileys/smile/smile.png"
-            ]
-        },
-        {
-            "paid_smileys": ["smiley", "smiley_cat"],
-            "free_smileys": [
-                "https://lusaustr.sirv.com/smileys/smiley/smiley.png",
-                "https://lusaustr.sirv.com/smileys/smiley/smiley.gif"
-            ]
-        },
+        ["slight_smile"],
+        ["smile", "smile_cat"],
+        ["smiley", "smiley_cat"]
+    ],
+    "old_smileys": [
         {
             "paid_smileys": ["relaxed", "blush"],
             "free_smileys": [
