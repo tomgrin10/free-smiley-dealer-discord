@@ -148,7 +148,7 @@ async def command_size(ctx: commands.Context, size: str):
         return
 
     if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
-        await bot.say(f"Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.")
+        await bot.say(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
         return
 
     # Lock thread
@@ -159,7 +159,7 @@ async def command_size(ctx: commands.Context, size: str):
             json.dump(DYNAMIC_DATA, f, indent=4)
 
     print(f"Size changed to {size} in {ctx.message.server}.")
-    await bot.say(f"Size changed to {size}.")
+    await bot.say(f":white_check_mark: Size changed to {size}.")
 
 
 # Reload data every once in a while
