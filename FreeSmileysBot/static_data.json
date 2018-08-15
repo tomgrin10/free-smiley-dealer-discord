@@ -17,21 +17,22 @@
         {
             "paid_smileys": ["slight_smile"],
             "free_smileys": [
-                "https://lusaustr.sirv.com/smileys/slight_smile.png",
-                "https://lusaustr.sirv.com/smileys/slight_smile2.png"
+                "https://lusaustr.sirv.com/smileys/slight_smile/slight_smile.png",
+                "https://lusaustr.sirv.com/smileys/slight_smile/slight_smile1.png",
+                "https://lusaustr.sirv.com/smileys/slight_smile/slight_smile2.png"
             ]
         },
         {
             "paid_smileys": ["smile", "smile_cat"],
             "free_smileys": [
-                "https://lusaustr.sirv.com/smileys/smile.png"
+                "https://lusaustr.sirv.com/smileys/smile/smile.png"
             ]
         },
         {
             "paid_smileys": ["smiley", "smiley_cat"],
             "free_smileys": [
-                "https://lusaustr.sirv.com/smileys/smiley.png",
-                "https://lusaustr.sirv.com/smileys/smiley.gif"
+                "https://lusaustr.sirv.com/smileys/smiley/smiley.png",
+                "https://lusaustr.sirv.com/smileys/smiley/smiley.gif"
             ]
         },
         {
