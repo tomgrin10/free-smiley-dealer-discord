@@ -4,7 +4,7 @@ import asyncio
 import json
 import random
 import time
-import tldextract
+import urllib.parse
 import pathlib
 import requests
 
@@ -69,7 +69,7 @@ async def correct_smiley(emoji_names: list, message: discord.Message, do_mention
             title = random.choice(STATIC_DATA["titles"])
             dir_url = f"{STATIC_DATA['base_url']}/{p_smileys[0]}"
             dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
-            free_smiley_url = f"{dir_url}/{random.choice(dir_json['files'])['name']}"
+            free_smiley_url = f"{dir_url}/{urllib.parse.quote(random.choice(dir_json['files'])['name'])}"
             free_smiley_url = format_sirv_smiley_url(free_smiley_url, message.server.id)
 
             # Create the embed
@@ -144,7 +144,7 @@ async def command_size(ctx: commands.Context, size: str):
     try:
         size = int(size)
     except ValueError:
-        await bot.say("Invalid size.")
+        await bot.say(":x: **Invalid size.**")
         return
 
     if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
