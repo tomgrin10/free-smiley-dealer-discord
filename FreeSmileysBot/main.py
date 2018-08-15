@@ -166,7 +166,7 @@ async def command_size(ctx: commands.Context, size: str):
 async def reload_data_continuously():
     global STATIC_DATA, DISCORD_CODE_TO_EMOJI, DISCORD_EMOJI_TO_CODE
     while True:
-        await asyncio.sleep(500)
+        await asyncio.sleep(60)
         t0 = time.time()
 
         with open(STATIC_DATA_FILENAME, 'r') as f:

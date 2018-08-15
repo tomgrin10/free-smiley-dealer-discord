@@ -15,15 +15,28 @@
     ],
     "base_url": "https://lusaustr.sirv.com/smileys",
     "smileys": [
-        ["slight_smile"],
+        ["slight_smile", "ssmile"],
         ["smile", "smile_cat"],
         ["smiley", "smiley_cat"],
+        ["grin", "grinning"],
+        ["grimace", "grimacing"],
         ["blush", "relaxed"],
-        ["sunny", "sun_with_face"],
+        ["sun", "sunny", "sun_with_face"],
         ["weary"],
         ["angel"],
         ["cool", "sunglasses"],
-        ["innocent"]
+        ["innocent"],
+        ["hug", "hugging"],
+        ["joy", "joy_cat"],
+        [
+            "clock", "alarm_clock", "timer",
+            "clock1130", "clock3", "clock1", "clock10",
+            "clock1030", "clock11", "clock12", "clock1230",
+            "clock130", "clock2", "clock230", "clock330",
+            "clock4", "clock430", "clock5", "clock530",
+            "clock6", "clock630", "clock7", "clock730",
+            "clock8", "clock830", "clock9", "clock930"
+        ]
     ],
     "old_smileys": [
         {
@@ -31,15 +44,6 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476407960227282946/ezgif-1-cc0b5100b2.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476417184499761182/ezgif-3-ddf24c28dc.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["grin", "grinning"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476409671327154186/screenshot_1_1.png",
-                "https://cdn.discordapp.com/attachments/256054465898086400/476414535495057408/Webp.net-resizeimage_1.png",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476410106368753674/www.free-smiley-faces.de_56_smiley-icons_waifu2x_photo_scale_tta_1.png",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476416138398662656/Webp.net-resizeimage.png"
             ]
         },
         {
@@ -72,12 +76,6 @@
             ]
         },
         {
-            "paid_smileys": ["hugging"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476417213331668992/Webp.net-resizeimage.png"
-            ]
-        },
-        {
             "paid_smileys": ["kiss", "kissing_heart", "kissing", "kissing_cat", "kissing_closed_eyes"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476417772830588939/Webp.net-resizeimage.gif",
@@ -89,13 +87,6 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/256054465898086400/477981727709724676/herz.gif",
                 "https://cdn.discordapp.com/attachments/476864438000025616/478014066439225354/ezgif-3-d9e2f0e808.png"
-            ]
-        },
-        {
-            "paid_smileys": ["pig", "pig2", "pig_nose"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476419296638271514/2027b775-5b28-4036-9f88-4de68dd6b872.png",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476419322647019520/www.free-smiley-faces.de_104_smiley-icons_waifu2x_photo_scale_tta_1.png"
             ]
         },
         {
@@ -118,12 +109,6 @@
             ]
         },
         {
-            "paid_smileys": ["grimacing"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476422910081499148/Screenshot_1.png"
-            ]
-        },
-        {
             "paid_smileys": ["wink"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476424302749679616/Webp.net-resizeimage_2.gif",
@@ -143,12 +128,6 @@
             "paid_smileys": ["rofl"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476424989885595659/Webp.net-resizeimage_1.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["joy"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/470348363871551489/476532020164558849/Webp.net-resizeimage.png"
             ]
         },
         {
@@ -231,20 +210,6 @@
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476910765501186058/ezgif-3-7425805789.jpg",
                 "https://cdn.discordapp.com/attachments/476864438000025616/476910777085853709/ezgif-3-4f51437557.jpg"
-            ]
-        },
-        {
-            "paid_smileys": [
-                "clock", "alarm_clock", "timer",
-                "clock1130", "clock3", "clock1", "clock10",
-                "clock1030", "clock11", "clock12", "clock1230",
-                "clock130", "clock2", "clock230", "clock330",
-                "clock4", "clock430", "clock5", "clock530",
-                "clock6", "clock630", "clock7", "clock730",
-                "clock8", "clock830", "clock9", "clock930"
-            ],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/476912768981663755/ezgif-3-86c9aa65c1.png"
             ]
         },
         {
