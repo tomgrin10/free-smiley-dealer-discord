@@ -30,8 +30,12 @@
         ["spy", "bust_in_silhouette", "busts_in_silhouette"],
         ["innocent"],
         ["hug", "hugging"],
+        ["heart"],
         ["pig", "pig2", "pig_nose"],
         ["lemon"],
+        ["soccer"],
+        ["peace", "dove"],
+        ["tomato"],
         ["joy", "joy_cat"],
         [
             "clock", "alarm_clock", "timer",
@@ -88,13 +92,6 @@
             ]
         },
         {
-            "paid_smileys": ["heart"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/256054465898086400/477981727709724676/herz.gif",
-                "https://cdn.discordapp.com/attachments/476864438000025616/478014066439225354/ezgif-3-d9e2f0e808.png"
-            ]
-        },
-        {
             "paid_smileys": ["nauseated_face", "puke"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476419852421038081/Webp.net-resizeimage.gif"
@@ -147,12 +144,6 @@
             "paid_smileys": ["thumbsup"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/470348363871551489/476834107024867368/Webp.net-resizeimage_1.png"
-            ]
-        },
-        {
-            "paid_smileys": ["peace", "dove"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476429384186855425/Webp.net-resizeimage_1.jpg"
             ]
         },
         {
