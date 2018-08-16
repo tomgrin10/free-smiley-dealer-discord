@@ -61,8 +61,7 @@ async def log(s: str):
     await bot.send_message(bot.get_channel(STATIC_DATA["logs_channel"]), s)
 
 
-async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: int = None,
-                         do_embed=True, do_mention=True, do_title=True):
+def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: int = None):
 
     # Iterate emojis in message
     for p_smileys in STATIC_DATA["smileys"]:
@@ -71,47 +70,34 @@ async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: 
 
         print(message.content + " detected.")
 
-        # Get parameters for embed
-        title = random.choice(STATIC_DATA["titles"])
+        # Get and format url
         dir_url = f"{STATIC_DATA['base_url']}/{p_smileys[0]}"
         dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
 
         if smiley_num is None:
-            smiley_name = random.choice(dir_json['files'])['name']
+            try:
+                smiley_name = random.choice(dir_json['files'])['name']
+            except IndexError:
+                break
         else:
             matches = list(filter(lambda file: str(smiley_num) in file["name"], dir_json["files"]))
             if len(matches) == 0:
-                return
+                return None
             smiley_name = matches[0]["name"]
 
         free_smiley_url = f"{dir_url}/{urllib.parse.quote(smiley_name)}"
         free_smiley_url = format_sirv_smiley_url(free_smiley_url, message.server.id)
 
-        # Create the embed
-        embed = discord.Embed(title=(title if do_title else ""))
-        embed.set_image(url=free_smiley_url)
-        content = (f"<@{message.author.id}>" if do_mention else "") + (f"\n{free_smiley_url}" if not do_embed else "")
-        await bot.send_message(message.channel, content=content, embed=(embed if do_embed else None))
-
-        return
+        return free_smiley_url
 
     # Iterate old smiley types in file
     for record in STATIC_DATA["old_smileys"]:
         if emoji_name not in record["paid_smileys"]:
             continue
 
-        print(message.content + " detected.")
+        return random.choice(record["free_smileys"])
 
-        # Get parameters for embed
-        title = random.choice(STATIC_DATA["titles"])
-        free_smiley_url = random.choice(record["free_smileys"])
-
-        # Create the embed
-        embed = discord.Embed(title=(title if do_title else ""))
-        embed.set_image(url=free_smiley_url)
-        await bot.send_message(message.channel, content=(f"<@{message.author.id}>" if do_mention else ""), embed=embed)
-
-        return
+    return None
 
 
 @bot.event
@@ -129,7 +115,14 @@ async def on_message(message: discord.Message):
             return
 
         for emoji in emoji_lis(message.content):
-            await correct_smiley(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message)
+            url = get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message)
+            if url is not None:
+                print(message.content + " detected.")
+
+                # Create the embed
+                embed = discord.Embed(title=random.choice(STATIC_DATA["titles"]))
+                embed.set_image(url=url)
+                await bot.send_message(message.channel, content=f"<@{message.author.id}>", embed=embed)
 
         await bot.process_commands(message)
 
@@ -138,10 +131,9 @@ async def on_message(message: discord.Message):
         await log(f"Error: {str(e)}")
 
 
-@bot.command(pass_context=True, name="help", aliases=["h"])
-async def command_help(ctx: commands.Context):
+@bot.command(name="help", aliases=["h"])
+async def command_help():
     print("help")
-    # "help": "\n",
     await bot.say(STATIC_DATA['help'])
 
 
@@ -152,7 +144,12 @@ async def command_smiley(ctx: commands.Context, emoji_name: str, smiley_num: str
     except (ValueError, TypeError):
         smiley_num = None
 
-    await correct_smiley(emoji_name, ctx.message, smiley_num=smiley_num, do_embed=False, do_mention=False, do_title=False)
+    url = get_free_smiley_url(emoji_name, ctx.message, smiley_num=smiley_num)
+    if url is not None:
+        print(ctx.message.content + " detected.")
+        await bot.say(url)
+    else:
+        await bot.say(":x: **Smiley not found.**")
 
 
 @bot.command(pass_context=True, name="size", aliases=["height"])

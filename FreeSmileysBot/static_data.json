@@ -35,8 +35,23 @@
         ["lemon"],
         ["soccer"],
         ["peace", "dove"],
+        ["nuclear", "radioactive"],
         ["tomato"],
         ["joy", "joy_cat"],
+        ["thumbs_up", "thumbsup", "+1", "upvote"],
+        ["cowboy"],
+        ["peach", "butt", "ass"],
+        ["think", "thinking"],
+        ["angry"],
+        ["astonished", "open_mouth", "scream", "scream_cat"],
+        ["exclamation", "grey_exclamation", "attention"],
+        [
+            "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
+            "full_moon", "full_moon_with_face", "last_quarter_moon",
+            "last_quarter_moon_with_face", "new_moon", "new_moon_with_face",
+            "waning_crescent_moon", "waning_gibbous_moon", "waxing_crescent_moon",
+            "waxing_gibbous_moon"
+        ],
         [
             "clock", "alarm_clock", "timer",
             "clock1130", "clock3", "clock1", "clock10",
@@ -105,12 +120,6 @@
             ]
         },
         {
-            "paid_smileys": ["thinking"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/476921538747170816/ezgif-3-8dcc921be6.png"
-            ]
-        },
-        {
             "paid_smileys": ["wink"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476424302749679616/Webp.net-resizeimage_2.gif",
@@ -141,19 +150,6 @@
             ]
         },
         {
-            "paid_smileys": ["thumbsup"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/470348363871551489/476834107024867368/Webp.net-resizeimage_1.png"
-            ]
-        },
-        {
-            "paid_smileys": ["astonished", "open_mouth", "scream", "scream_cat"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476430362222919682/Webp.net-resizeimage.png",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476431569536417804/www.free-smiley-faces.de_a13_smiley-icons_waifu2x_photo_scale_tta_1.png"
-            ]
-        },
-        {
             "paid_smileys": ["toilet"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476403967795134465/ezgif-1-ee792a4817.gif"
@@ -163,18 +159,6 @@
             "paid_smileys": ["skull", "skull_crossbones"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/256054465898086400/476855696202268690/ezgif-3-fcf76ac03f.gif"
-            ]
-        },
-        {
-            "paid_smileys": [
-                "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
-                "full_moon", "full_moon_with_face", "last_quarter_moon",
-                "last_quarter_moon_with_face", "new_moon", "new_moon_with_face",
-                "waning_crescent_moon", "waning_gibbous_moon", "waxing_crescent_moon",
-                "waxing_gibbous_moon"
-            ],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/256054465898086400/476859463819591712/ezgif-3-36ea703d58.gif"
             ]
         },
         {
@@ -196,40 +180,15 @@
             ]
         },
         {
-            "paid_smileys": ["radioactive"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/476910765501186058/ezgif-3-7425805789.jpg",
-                "https://cdn.discordapp.com/attachments/476864438000025616/476910777085853709/ezgif-3-4f51437557.jpg"
-            ]
-        },
-        {
             "paid_smileys": ["rolling_eyes"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/476922626900623362/ezgif-3-c23903d9c6.gif"
             ]
         },
         {
-            "paid_smileys": ["exclamation", "grey_exclamation"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/477195330593488926/ezgif-3-5eadf88eea.png"
-            ]
-        },
-        {
             "paid_smileys": ["trophy"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476864438000025616/477242205782802442/ezgif-3-e2314e6ed5.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["peach"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/477249766250643481/477276904571797504/ezgif-3-461c21a935.png"
-            ]
-        },
-        {
-            "paid_smileys": ["cowboy"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/477984358922452992/emote_waifu2x_art_noise1_scale_tta_1.png"
             ]
         },
         {
