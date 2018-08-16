@@ -56,6 +56,11 @@ def format_sirv_smiley_url(url: str, server_id: str) -> str:
         return url + f"?scale.height={DEFAULT_SMILEY_SIZE}"
 
 
+async def log(s: str):
+    print(s)
+    await bot.send_message(bot.get_channel(STATIC_DATA["logs_channel"]), s)
+
+
 async def correct_smiley(emoji_names: list, message: discord.Message, do_mention: bool = True, do_title: bool = True):
     # Iterate emojis in message
     for emoji_name in emoji_names:
@@ -101,8 +106,8 @@ async def correct_smiley(emoji_names: list, message: discord.Message, do_mention
 @bot.event
 async def on_ready():
     await bot.change_presence(game=discord.Game(name=STATIC_DATA["game"]))
-    print("Bot is ready.")
-    print([s.name for s in bot.servers])
+    await log("Bot is ready.")
+    await log(str([s.name for s in bot.servers]))
 
 
 @bot.event
@@ -118,7 +123,7 @@ async def on_message(message: discord.Message):
 
     except Exception as e:
         bot.send_message(message.channel, ":x: **An error occurred.**")
-        print(f"Error: {str(e)}")
+        await log(f"Error: {str(e)}")
 
 
 @bot.command(pass_context=True, name="help", aliases=["h"])
@@ -158,7 +163,7 @@ async def command_size(ctx: commands.Context, size: str):
             DYNAMIC_DATA["sizes"][ctx.message.server.id] = size
             json.dump(DYNAMIC_DATA, f, indent=4)
 
-    print(f"Size changed to {size} in {ctx.message.server}.")
+    await log(f"Size changed to {size} in {ctx.message.server}.")
     await bot.say(f":white_check_mark: Size changed to {size}.")
 
 
@@ -172,7 +177,7 @@ async def reload_data_continuously():
         with open(STATIC_DATA_FILENAME, 'r') as f:
             STATIC_DATA = json.load(f)
 
-        print(f"Reloaded data in {int(round((time.time() - t0) * 1000))} ms.")
+        await log(f"Reloaded data in {int(round((time.time() - t0) * 1000))} ms.")
 
 
 bot.loop.create_task(reload_data_continuously())
