@@ -61,7 +61,9 @@ async def log(s: str):
     await bot.send_message(bot.get_channel(STATIC_DATA["logs_channel"]), s)
 
 
-async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: int = None, do_mention: bool = True, do_title: bool = True):
+async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: int = None,
+                         do_embed=True, do_mention=True, do_title=True):
+
     # Iterate emojis in message
     for p_smileys in STATIC_DATA["smileys"]:
         if emoji_name not in p_smileys:
@@ -88,7 +90,8 @@ async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: 
         # Create the embed
         embed = discord.Embed(title=(title if do_title else ""))
         embed.set_image(url=free_smiley_url)
-        await bot.send_message(message.channel, content=(f"<@{message.author.id}>" if do_mention else ""), embed=embed)
+        content = (f"<@{message.author.id}>" if do_mention else "") + (f"\n{free_smiley_url}" if not do_embed else "")
+        await bot.send_message(message.channel, content=content, embed=(embed if do_embed else None))
 
         return
 
@@ -149,7 +152,7 @@ async def command_smiley(ctx: commands.Context, emoji_name: str, smiley_num: str
     except (ValueError, TypeError):
         smiley_num = None
 
-    await correct_smiley(emoji_name, ctx.message, smiley_num=smiley_num, do_mention=False, do_title=False)
+    await correct_smiley(emoji_name, ctx.message, smiley_num=smiley_num, do_embed=False, do_mention=False, do_title=False)
 
 
 @bot.command(pass_context=True, name="size", aliases=["height"])
