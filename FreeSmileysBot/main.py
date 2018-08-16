@@ -72,7 +72,7 @@ async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: 
         # Get parameters for embed
         title = random.choice(STATIC_DATA["titles"])
         dir_url = f"{STATIC_DATA['base_url']}/{p_smileys[0]}"
-        dir_json = json.loads(requests.get(f"{dir_url}?json=true", headers={'Cache-Control': 'no-cache'}).text)
+        dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
 
         if smiley_num == None:
             smiley_name = random.choice(dir_json['files'])['name']
