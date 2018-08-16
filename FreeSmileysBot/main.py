@@ -61,46 +61,54 @@ async def log(s: str):
     await bot.send_message(bot.get_channel(STATIC_DATA["logs_channel"]), s)
 
 
-async def correct_smiley(emoji_names: list, message: discord.Message, do_mention: bool = True, do_title: bool = True):
+async def correct_smiley(emoji_name: str, message: discord.Message, smiley_num: int = None, do_mention: bool = True, do_title: bool = True):
     # Iterate emojis in message
-    for emoji_name in emoji_names:
-        for p_smileys in STATIC_DATA["smileys"]:
-            if emoji_name not in p_smileys:
-                continue
+    for p_smileys in STATIC_DATA["smileys"]:
+        if emoji_name not in p_smileys:
+            continue
 
-            print(message.content + " detected.")
+        print(message.content + " detected.")
 
-            # Get parameters for embed
-            title = random.choice(STATIC_DATA["titles"])
-            dir_url = f"{STATIC_DATA['base_url']}/{p_smileys[0]}"
-            dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
-            free_smiley_url = f"{dir_url}/{urllib.parse.quote(random.choice(dir_json['files'])['name'])}"
-            free_smiley_url = format_sirv_smiley_url(free_smiley_url, message.server.id)
+        # Get parameters for embed
+        title = random.choice(STATIC_DATA["titles"])
+        dir_url = f"{STATIC_DATA['base_url']}/{p_smileys[0]}"
+        dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
 
-            # Create the embed
-            embed = discord.Embed(title=(title if do_title else ""))
-            embed.set_image(url=free_smiley_url)
-            await bot.send_message(message.channel, content=(f"<@{message.author.id}>" if do_mention else ""), embed=embed)
+        if smiley_num == None:
+            smiley_name = random.choice(dir_json['files'])['name']
+        else:
+            matches = list(filter(lambda file: str(smiley_num) in file["name"], dir_json["files"]))
+            if len(matches) == 0:
+                return
+            smiley_name = matches[0]["name"]
 
-            return
+        free_smiley_url = f"{dir_url}/{urllib.parse.quote(smiley_name)}"
+        free_smiley_url = format_sirv_smiley_url(free_smiley_url, message.server.id)
 
-        # Iterate old smiley types in file
-        for record in STATIC_DATA["old_smileys"]:
-            if emoji_name not in record["paid_smileys"]:
-                continue
+        # Create the embed
+        embed = discord.Embed(title=(title if do_title else ""))
+        embed.set_image(url=free_smiley_url)
+        await bot.send_message(message.channel, content=(f"<@{message.author.id}>" if do_mention else ""), embed=embed)
 
-            print(message.content + " detected.")
+        return
 
-            # Get parameters for embed
-            title = random.choice(STATIC_DATA["titles"])
-            free_smiley_url = random.choice(record["free_smileys"])
+    # Iterate old smiley types in file
+    for record in STATIC_DATA["old_smileys"]:
+        if emoji_name not in record["paid_smileys"]:
+            continue
 
-            # Create the embed
-            embed = discord.Embed(title=(title if do_title else ""))
-            embed.set_image(url=free_smiley_url)
-            await bot.send_message(message.channel, content=(f"<@{message.author.id}>" if do_mention else ""), embed=embed)
+        print(message.content + " detected.")
 
-            return
+        # Get parameters for embed
+        title = random.choice(STATIC_DATA["titles"])
+        free_smiley_url = random.choice(record["free_smileys"])
+
+        # Create the embed
+        embed = discord.Embed(title=(title if do_title else ""))
+        embed.set_image(url=free_smiley_url)
+        await bot.send_message(message.channel, content=(f"<@{message.author.id}>" if do_mention else ""), embed=embed)
+
+        return
 
 
 @bot.event
@@ -117,7 +125,8 @@ async def on_message(message: discord.Message):
         if message.author == bot.user:
             return
 
-        await correct_smiley([DISCORD_EMOJI_TO_CODE[e].replace(':', '') for e in emoji_lis(message.content)], message)
+        for emoji in emoji_lis(message.content):
+            await correct_smiley(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message)
 
         await bot.process_commands(message)
 
@@ -130,12 +139,17 @@ async def on_message(message: discord.Message):
 async def command_help(ctx: commands.Context):
     print("help")
     # "help": "\n",
-    await bot.say(f"{STATIC_DATA['help']}")
+    await bot.say(STATIC_DATA['help'])
 
 
 @bot.command(pass_context=True, name="smiley", aliases=["s"])
-async def command_smiley(ctx: commands.Context, emoji_name_message: str):
-    await correct_smiley([emoji_name_message], ctx.message, do_mention=False, do_title=False)
+async def command_smiley(ctx: commands.Context, emoji_name: str, smiley_num: str = None):
+    try:
+        smiley_num = int(smiley_num)
+    except (ValueError, TypeError):
+        smiley_num = None
+
+    await correct_smiley(emoji_name, ctx.message, smiley_num=smiley_num, do_mention=False, do_title=False)
 
 
 @bot.command(pass_context=True, name="size", aliases=["height"])

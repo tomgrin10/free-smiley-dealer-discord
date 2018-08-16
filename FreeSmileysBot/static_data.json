@@ -17,6 +17,7 @@
     "base_url": "https://lusaustr.sirv.com/smileys",
     "smileys": [
         ["slight_smile", "ssmile"],
+        ["upside_down"],
         ["smile", "smile_cat"],
         ["smiley", "smiley_cat"],
         ["grin", "grinning"],
@@ -26,9 +27,11 @@
         ["weary"],
         ["angel"],
         ["cool", "sunglasses"],
+        ["spy", "bust_in_silhouette", "busts_in_silhouette"],
         ["innocent"],
         ["hug", "hugging"],
         ["pig", "pig2", "pig_nose"],
+        ["lemon"],
         ["joy", "joy_cat"],
         [
             "clock", "alarm_clock", "timer",
@@ -138,12 +141,6 @@
                 "https://cdn.discordapp.com/attachments/476402937808027658/476425512361787402/Webp.net-resizeimage_2.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426278443024385/Webp.net-resizeimage_3.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426428074950688/Webp.net-resizeimage_4.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["spy", "bust_in_silhouette", "busts_in_silhouette"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476428962952904705/Webp.net-resizeimage.jpg"
             ]
         },
         {
