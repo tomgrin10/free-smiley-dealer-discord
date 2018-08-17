@@ -123,6 +123,8 @@ async def on_message(message: discord.Message):
                 embed = discord.Embed(title=random.choice(STATIC_DATA["titles"]))
                 embed.set_image(url=url)
                 await bot.send_message(message.channel, content=f"<@{message.author.id}>", embed=embed)
+                
+                break
 
         await bot.process_commands(message)
 
