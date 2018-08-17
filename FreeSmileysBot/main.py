@@ -4,6 +4,7 @@ import asyncio
 import json
 import random
 import time
+import datetime
 import urllib.parse
 import pathlib
 import requests
@@ -16,6 +17,7 @@ DYNAMIC_DATA_FILENAME = "dynamic_data.json"
 DEFAULT_SMILEY_SIZE = 150
 MIN_SMILEY_SIZE = 40
 MAX_SMILEY_SIZE = 300
+T0 = time.time()
 
 # Load data
 with open(TOKEN_FILENAME) as f:
@@ -123,7 +125,7 @@ async def on_message(message: discord.Message):
                 embed = discord.Embed(title=random.choice(STATIC_DATA["titles"]))
                 embed.set_image(url=url)
                 await bot.send_message(message.channel, content=f"<@{message.author.id}>", embed=embed)
-                
+
                 break
 
         await bot.process_commands(message)
@@ -181,6 +183,16 @@ async def command_size(ctx: commands.Context, size: str):
 
     await log(f"Size changed to {size} in {ctx.message.server}.")
     await bot.say(f":white_check_mark: Size changed to {size}.")
+    
+    
+@bot.command(name="upkeep")
+async def command_upkeep():
+    delta = datetime.timedelta(seconds=time.time() - T0)
+    days = delta.days
+    hours, rem = divmod(delta.seconds, 3600)
+    mins, secs = divmod(rem, 60)
+    await bot.say(f"{days}d {hours}h {mins}m {secs}s")
+    # 5d 14h
 
 
 # Reload data every once in a while
