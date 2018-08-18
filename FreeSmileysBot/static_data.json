@@ -15,6 +15,7 @@
         "Look at him, he is paying for smileys!"
     ],
     "base_url": "https://lusaustr.sirv.com/smileys",
+    
     "smileys": [
         ["slight_smile", "ssmile"],
         ["upside_down"],
@@ -43,8 +44,16 @@
         ["peach", "butt", "ass"],
         ["think", "thinking"],
         ["angry"],
+        ["kissing", "kissing_closed_eyes", "kissing_cat", "kissing_smiling_eyes", "kiss"],
+        ["kissing_heart"],
         ["astonished", "open_mouth", "scream", "scream_cat"],
+        ["stuck_out_tongue_winking_eye"], 
+        ["stuck_out_tongue", "tongue"],
+        ["stuck_out_tongue_closed_eyes"],
         ["exclamation", "grey_exclamation", "attention"],
+        ["laughing", "haha"],
+        ["rofl"],
+        ["toilet", "shid", "shit"],
         [
             "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
             "full_moon", "full_moon_with_face", "last_quarter_moon",
@@ -62,29 +71,12 @@
             "clock8", "clock830", "clock9", "clock930"
         ]
     ],
+    
     "old_smileys": [
-        {
-            "paid_smileys": ["stuck_out_tongue_winking_eye", "stuck_out_tongue", "stuck_out_tongue_closed_eyes", "tongue"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476407960227282946/ezgif-1-cc0b5100b2.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476417184499761182/ezgif-3-ddf24c28dc.gif"
-            ]
-        },
         {
             "paid_smileys": ["rage"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476411581815848980/ezgif-1-b64f84c55d.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["soccer"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476412850777358346/Webp.net-resizeimage_1.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476412857106300928/Webp.net-resizeimage_2.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476412860931637269/Webp.net-resizeimage_3.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476412863846547456/Webp.net-resizeimage_4.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476412863687163917/Webp.net-resizeimage_5.gif",
-                "https://cdn.discordapp.com/attachments/476864438000025616/476908463381807110/ezgif-3-0acb1d2844.gif"
             ]
         },
         {
@@ -97,13 +89,6 @@
             "paid_smileys": ["gun"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476415953152770049/Webp.net-resizeimage_1.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["kiss", "kissing_heart", "kissing", "kissing_cat", "kissing_closed_eyes"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476417772830588939/Webp.net-resizeimage.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476418073004343296/Webp.net-resizeimage_1.gif"
             ]
         },
         {
@@ -127,32 +112,11 @@
             ]
         },
         {
-            "paid_smileys": ["laughing", "haha"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476424656505667594/Webp.net-resizeimage.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476427670280994816/Webp.net-resizeimage_1.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476427684881104906/Webp.net-resizeimage_3.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476427679730761728/Webp.net-resizeimage_2.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["rofl"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476424989885595659/Webp.net-resizeimage_1.gif"
-            ]
-        },
-        {
             "paid_smileys": ["disappointed_relieved", "cry", "sob"],
             "free_smileys": [
                 "https://cdn.discordapp.com/attachments/476402937808027658/476425512361787402/Webp.net-resizeimage_2.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426278443024385/Webp.net-resizeimage_3.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426428074950688/Webp.net-resizeimage_4.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["toilet"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476403967795134465/ezgif-1-ee792a4817.gif"
             ]
         },
         {
