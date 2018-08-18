@@ -51,9 +51,12 @@
         ["stuck_out_tongue", "tongue"],
         ["stuck_out_tongue_closed_eyes"],
         ["exclamation", "grey_exclamation", "attention"],
-        ["laughing", "haha"],
+        ["laughing", "haha", "lol"],
         ["rofl"],
         ["toilet", "shid", "shit"],
+        ["skull", "skull_crossbones"],
+        ["couple"],
+        ["couple_with_heart", "couplekiss"],
         [
             "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
             "full_moon", "full_moon_with_face", "last_quarter_moon",
@@ -117,24 +120,6 @@
                 "https://cdn.discordapp.com/attachments/476402937808027658/476425512361787402/Webp.net-resizeimage_2.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426278443024385/Webp.net-resizeimage_3.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426428074950688/Webp.net-resizeimage_4.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["skull", "skull_crossbones"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/256054465898086400/476855696202268690/ezgif-3-fcf76ac03f.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["couple"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/256054465898086400/476862820160372765/ezgif-3-940027df3e.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["couple_mm", "couple_with_heart", "couple_ww", "couplekiss", "kiss_mm", "kiss_ww"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/256054465898086400/476863229755392033/ezgif-3-3c7601433c.gif"
             ]
         },
         {
