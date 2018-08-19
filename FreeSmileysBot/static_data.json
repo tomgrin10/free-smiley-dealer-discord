@@ -1,5 +1,4 @@
 {
-    "logs_channel": "478001003103518720",
     "prefix": "s!",
     "game": "with free smileys | s!help",
     "help": "If you use :thumbsdown:**paid smileys (emojis)**:thumbsdown: in your message, I will correct you.\n**Try it out!** Type `:joy:`\n\nIf you just want to get :thumbsup:**free smileys**:thumbsup:  type `s!s` with the paid smiley name.\n**Try it out!** Type `s!s joy`\n\nIf you want to :heavy_plus_sign:**change the size**:heavy_plus_sign: of smileys, use `s!size` or `s!height`.\n**Try it out!** Type `s!size 200` (If you have `Manage Channels` permission) (default: `150`)\n\nSupport server here: https://discord.gg/TSBMBEA",
@@ -57,6 +56,10 @@
         ["skull", "skull_crossbones"],
         ["couple"],
         ["couple_with_heart", "couplekiss"],
+        ["basketball", "basketball_player"],
+        ["rolling_eyes"],
+        ["trophy"],
+        ["birthday"],
         [
             "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
             "full_moon", "full_moon_with_face", "last_quarter_moon",
@@ -120,31 +123,6 @@
                 "https://cdn.discordapp.com/attachments/476402937808027658/476425512361787402/Webp.net-resizeimage_2.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426278443024385/Webp.net-resizeimage_3.gif",
                 "https://cdn.discordapp.com/attachments/476402937808027658/476426428074950688/Webp.net-resizeimage_4.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["basketball", "basketball_player"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/476908197660327957/www_free-smiley-faces_de_free-animated-emoticons_200x200.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["rolling_eyes"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/476922626900623362/ezgif-3-c23903d9c6.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["trophy"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/477242205782802442/ezgif-3-e2314e6ed5.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["birthday"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476864438000025616/477994160943529984/ezgif-3-541d3b0784.gif",
-                "https://cdn.discordapp.com/attachments/476864438000025616/477994163468501006/ezgif-3-6a16d10dc3.gif"
             ]
         }
     ]

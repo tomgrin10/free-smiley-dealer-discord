@@ -10,7 +10,7 @@ import pathlib
 import requests
 
 # Constants
-TOKEN_FILENAME = "token.json"
+CONFIG_FILENAME = "config.json"
 STATIC_DATA_FILENAME = "static_data.json"
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
 DYNAMIC_DATA_FILENAME = "dynamic_data.json"
@@ -20,8 +20,8 @@ MAX_SMILEY_SIZE = 300
 T0 = time.time()
 
 # Load data
-with open(TOKEN_FILENAME) as f:
-    TOKEN = json.load(f)["token"]
+with open(CONFIG_FILENAME) as f:
+    CONFIG = json.load(f)
 with open(STATIC_DATA_FILENAME, 'r') as f:
     STATIC_DATA = json.load(f)
 with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
@@ -60,7 +60,7 @@ def format_sirv_smiley_url(url: str, server_id: str) -> str:
 
 async def log(s: str):
     print(s)
-    await bot.send_message(bot.get_channel(STATIC_DATA["logs_channel"]), s)
+    await bot.send_message(bot.get_channel(CONFIG["logs_channel"]), s)
 
 
 def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: int = None):
@@ -183,7 +183,19 @@ async def command_size(ctx: commands.Context, size: str):
 
     await log(f"Size changed to {size} in {ctx.message.server}.")
     await bot.say(f":white_check_mark: Size changed to {size}.")
-    
+
+
+@bot.command(name="invite", aliases=["inv"])
+async def command_invite():
+    if "invite" in CONFIG and CONFIG["invite"] is not None:
+        await bot.say(CONFIG["invite"])
+
+
+@bot.command(name="support")
+async def command_support():
+    if "support" in CONFIG and CONFIG["support"] is not None:
+        await bot.say(CONFIG["support"])
+
     
 @bot.command(name="upkeep")
 async def command_upkeep():
@@ -192,7 +204,6 @@ async def command_upkeep():
     hours, rem = divmod(delta.seconds, 3600)
     mins, secs = divmod(rem, 60)
     await bot.say(f"{days}d {hours}h {mins}m {secs}s")
-    # 5d 14h
 
 
 # Reload data every once in a while
@@ -209,4 +220,4 @@ async def reload_data_continuously():
 
 
 bot.loop.create_task(reload_data_continuously())
-bot.run(TOKEN)
+bot.run(CONFIG["token"])
