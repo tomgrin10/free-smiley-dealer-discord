@@ -51,20 +51,12 @@ def emoji_lis(s: str) -> list:
             yield c
 
 
-def format_sirv_smiley_url(url: str, server_id: str) -> str:
-    if server_id in DYNAMIC_DATA['sizes']:
-        return url + f"?scale.height={DYNAMIC_DATA['sizes'][server_id]}"
-    else:
-        return url + f"?scale.height={DEFAULT_SMILEY_SIZE}"
-
-
 async def log(s: str):
     print(s)
     await bot.send_message(bot.get_channel(CONFIG["logs_channel"]), s)
 
 
 def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: int = None):
-
     # Iterate emojis in message
     for p_smileys in STATIC_DATA["smileys"]:
         if emoji_name not in p_smileys:
@@ -77,29 +69,27 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
         dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
 
         if smiley_num is None:
+            # Get random smiley
             try:
                 smiley_name = random.choice(dir_json['files'])['name']
             except IndexError:
-                break
+                return
         else:
+            # Get smiley from smiley number
             matches = list(filter(lambda file: str(smiley_num) in file["name"], dir_json["files"]))
             if len(matches) == 0:
-                return None
+                return
             smiley_name = matches[0]["name"]
 
         free_smiley_url = f"{dir_url}/{urllib.parse.quote(smiley_name)}"
-        free_smiley_url = format_sirv_smiley_url(free_smiley_url, message.server.id)
+
+        # Attach height parameter to url
+        if message.server.id in DYNAMIC_DATA['sizes']:
+            free_smiley_url += f"?scale.height={DYNAMIC_DATA['sizes'][message.server.id]}"
+        else:
+            free_smiley_url += f"?scale.height={DEFAULT_SMILEY_SIZE}"
 
         return free_smiley_url
-
-    # Iterate old smiley types in file
-    for record in STATIC_DATA["old_smileys"]:
-        if emoji_name not in record["paid_smileys"]:
-            continue
-
-        return random.choice(record["free_smileys"])
-
-    return None
 
 
 @bot.event
@@ -197,8 +187,8 @@ async def command_support():
         await bot.say(CONFIG["support"])
 
     
-@bot.command(name="upkeep")
-async def command_upkeep():
+@bot.command(name="uptime")
+async def command_uptime():
     delta = datetime.timedelta(seconds=time.time() - T0)
     days = delta.days
     hours, rem = divmod(delta.seconds, 3600)

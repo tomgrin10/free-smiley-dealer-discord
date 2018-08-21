@@ -11,7 +11,8 @@
         "I get my smileys only on http://free-smiley.de",
         "Why pay for smileys when you can get them for free?",
         "You should get your smileys freely from http://free-smiley.de",
-        "Look at him, he is paying for smileys!"
+        "Look at him, he is paying for smileys!",
+        "Whoa whoa whoa. What is that?"
     ],
     "base_url": "https://lusaustr.sirv.com/smileys",
     
@@ -27,7 +28,7 @@
         ["weary"],
         ["angel"],
         ["cool", "sunglasses"],
-        ["spy", "bust_in_silhouette", "busts_in_silhouette"],
+        ["spy", "bust_in_silhouette", "busts_in_silhouette", "secret"],
         ["innocent"],
         ["hug", "hugging"],
         ["heart"],
@@ -38,7 +39,8 @@
         ["nuclear", "radioactive"],
         ["tomato"],
         ["joy", "joy_cat"],
-        ["thumbs_up", "thumbsup", "+1", "upvote"],
+        ["thumbs_up", "thumbsup", "+1", "upvote", "like"],
+        ["thumbs_down", "thumbsdown", "-1", "downvote", "dislike"],
         ["cowboy"],
         ["peach", "butt", "ass"],
         ["think", "thinking"],
@@ -60,6 +62,12 @@
         ["rolling_eyes"],
         ["trophy"],
         ["birthday"],
+        ["wink"],
+        ["cry", "disappointed_relieved", "sob"],
+        ["heart_eyes", "heart_eyes_cat"],
+        ["nauseated", "nauseated_face", "puke"],
+        ["rage", "angery"],
+        ["gun", "shoot"],
         [
             "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
             "full_moon", "full_moon_with_face", "last_quarter_moon",
@@ -76,54 +84,5 @@
             "clock6", "clock630", "clock7", "clock730",
             "clock8", "clock830", "clock9", "clock930"
         ]
-    ],
-    
-    "old_smileys": [
-        {
-            "paid_smileys": ["rage"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476411581815848980/ezgif-1-b64f84c55d.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["thumbsdown"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476415428898455553/Webp.net-resizeimage.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["gun"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476415953152770049/Webp.net-resizeimage_1.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["nauseated_face", "puke"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476419852421038081/Webp.net-resizeimage.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["heart_eyes", "heart_eyes_cat"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476420498516082698/Webp.net-resizeimage_1.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476418822505627648/Webp.net-resizeimage_2.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["wink"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476424302749679616/Webp.net-resizeimage_2.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476424405162000385/Webp.net-resizeimage_3.gif"
-            ]
-        },
-        {
-            "paid_smileys": ["disappointed_relieved", "cry", "sob"],
-            "free_smileys": [
-                "https://cdn.discordapp.com/attachments/476402937808027658/476425512361787402/Webp.net-resizeimage_2.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476426278443024385/Webp.net-resizeimage_3.gif",
-                "https://cdn.discordapp.com/attachments/476402937808027658/476426428074950688/Webp.net-resizeimage_4.gif"
-            ]
-        }
     ]
 }
