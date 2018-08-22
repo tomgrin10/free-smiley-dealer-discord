@@ -96,7 +96,7 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
 async def on_ready():
     await bot.change_presence(game=discord.Game(name=STATIC_DATA["game"]))
     await log("Bot is ready.")
-    await log(str([s.name for s in bot.servers]))
+    await log(f"{len(bot.servers)} servers:\n{[s.name for s in bot.servers]}")
 
 
 @bot.event
@@ -122,13 +122,37 @@ async def on_message(message: discord.Message):
 
     except Exception as e:
         bot.send_message(message.channel, ":x: **An error occurred.**")
-        await log(f"Error: {str(e)}")
+        await log(f"Error: {e}")
 
 
-@bot.command(name="help", aliases=["h"])
-async def command_help():
-    print("help")
-    await bot.say(STATIC_DATA['help'])
+@bot.command(pass_context=True, name="help", aliases=["h"])
+async def command_help(ctx: commands.Context):
+    p = bot.command_prefix
+    print(str(p))
+    await bot.say("""
+If you use **paid smileys (emojis)** in your message, I will correct you.
+**Try it out!** Type `:joy:`
+
+For more epic commands look in your **private messages**!""")
+
+    content = """
+If you use **paid smileys (emojis)** in your message, I will correct you.
+**Try it out!** Type `:joy:`"""
+    embed = discord.Embed(title=":information_source: Commands - s!", color=0xf3f702)
+    embed.add_field(name=":red_circle: smiley/s", value="""
+If you just want to get **free smileys** without using paid smileys.
+**Format:** `s!s <name> <number(optional)>`
+**Examples:** `s!s grin`, `s!s cry 2`""")
+    embed.add_field(name=":red_circle: size/height", value="""
+Sets the size of the smileys. (default:`150`) (between `40-300`)
+**Format:** `s!size <size>`
+**Example:** `s!size 200`""")
+    embed.add_field(name=":red_circle: invite/inv", value="""
+Invite me to your server!""")
+    embed.add_field(name=":red_circle: support", value="""
+Come to my support server for help or suggestions!""")
+
+    await bot.send_message(ctx.message.author, content, embed=embed)
 
 
 @bot.command(pass_context=True, name="smiley", aliases=["s"])
@@ -206,7 +230,7 @@ async def reload_data_continuously():
         with open(STATIC_DATA_FILENAME, 'r') as f:
             STATIC_DATA = json.load(f)
 
-        await log(f"Reloaded data in {int(round((time.time() - t0) * 1000))} ms.")
+        print(f"Reloaded data in {int(round((time.time() - t0) * 1000))} ms.")
 
 
 bot.loop.create_task(reload_data_continuously())

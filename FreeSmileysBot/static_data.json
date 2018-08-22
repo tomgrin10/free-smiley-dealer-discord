@@ -1,7 +1,6 @@
 {
     "prefix": "s!",
     "game": "with free smileys | s!help",
-    "help": "If you use :thumbsdown:**paid smileys (emojis)**:thumbsdown: in your message, I will correct you.\n**Try it out!** Type `:joy:`\n\nIf you just want to get :thumbsup:**free smileys**:thumbsup:  type `s!s` with the paid smiley name.\n**Try it out!** Type `s!s joy`\n\nIf you want to :heavy_plus_sign:**change the size**:heavy_plus_sign: of smileys, use `s!size` or `s!height`.\n**Try it out!** Type `s!size 200` (If you have `Manage Channels` permission) (default: `150`)\n\nSupport server here: https://discord.gg/TSBMBEA",
     "titles": [
         "Only free smileys here.",
         "No paid smileys in my server.",
@@ -68,6 +67,7 @@
         ["nauseated", "nauseated_face", "puke"],
         ["rage", "angery"],
         ["gun", "shoot"],
+        ["earth", "earth_africa", "earth_americas", "earth_asia", "globe_with_meridians"],
         [
             "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
             "full_moon", "full_moon_with_face", "last_quarter_moon",
