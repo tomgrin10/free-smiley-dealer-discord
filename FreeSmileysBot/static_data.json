@@ -23,6 +23,7 @@
         ["grin", "grinning"],
         ["grimace", "grimacing"],
         ["blush", "relaxed"],
+        ["flushed"],
         ["sun", "sunny", "sun_with_face"],
         ["weary"],
         ["angel"],
@@ -46,10 +47,16 @@
         ["angry"],
         ["kissing", "kissing_closed_eyes", "kissing_cat", "kissing_smiling_eyes", "kiss"],
         ["kissing_heart"],
-        ["astonished", "open_mouth", "scream", "scream_cat"],
+        ["astonished", "scream", "scream_cat", "hushed"],
+        ["open_mouth"],
         ["stuck_out_tongue_winking_eye"], 
         ["stuck_out_tongue", "tongue"],
         ["stuck_out_tongue_closed_eyes"],
+        ["yum"],
+        ["unamused"],
+        ["frowning", "frowning2", "slight_frown", "fearful", "anguished"],
+        ["pensive", "confused", "neutral_face", "expressionless"],
+        ["smirk", "smirk_cat"],
         ["exclamation", "grey_exclamation", "attention"],
         ["laughing", "haha", "lol"],
         ["rofl"],
@@ -62,27 +69,14 @@
         ["trophy"],
         ["birthday"],
         ["wink"],
-        ["cry", "disappointed_relieved", "sob"],
+        ["cry", "disappointed_relieved", "sob", "cold_sweat"],
         ["heart_eyes", "heart_eyes_cat"],
         ["nauseated", "nauseated_face", "puke"],
         ["rage", "angery"],
         ["gun", "shoot"],
+        ["money_mouth"],
         ["earth", "earth_africa", "earth_americas", "earth_asia", "globe_with_meridians"],
-        [
-            "moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face",
-            "full_moon", "full_moon_with_face", "last_quarter_moon",
-            "last_quarter_moon_with_face", "new_moon", "new_moon_with_face",
-            "waning_crescent_moon", "waning_gibbous_moon", "waxing_crescent_moon",
-            "waxing_gibbous_moon"
-        ],
-        [
-            "clock", "alarm_clock", "timer",
-            "clock1130", "clock3", "clock1", "clock10",
-            "clock1030", "clock11", "clock12", "clock1230",
-            "clock130", "clock2", "clock230", "clock330",
-            "clock4", "clock430", "clock5", "clock530",
-            "clock6", "clock630", "clock7", "clock730",
-            "clock8", "clock830", "clock9", "clock930"
-        ]
+        ["moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face", "full_moon", "full_moon_with_face", "last_quarter_moon", "last_quarter_moon_with_face", "new_moon", "new_moon_with_face", "waning_crescent_moon", "waning_gibbous_moon", "waxing_crescent_moon", "waxing_gibbous_moon"],
+        ["clock", "alarm_clock", "timer", "clock1130", "clock3", "clock1", "clock10", "clock1030", "clock11", "clock12", "clock1230", "clock130", "clock2", "clock230", "clock330", "clock4", "clock430", "clock5", "clock530", "clock6", "clock630", "clock7", "clock730", "clock8", "clock830", "clock9", "clock930"]
     ]
 }
