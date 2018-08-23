@@ -75,6 +75,7 @@
         ["rage", "angery"],
         ["gun", "shoot"],
         ["money_mouth"],
+        ["friday", "calendar", "calendar_spiral"],
         ["earth", "earth_africa", "earth_americas", "earth_asia", "globe_with_meridians"],
         ["moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face", "full_moon", "full_moon_with_face", "last_quarter_moon", "last_quarter_moon_with_face", "new_moon", "new_moon_with_face", "waning_crescent_moon", "waning_gibbous_moon", "waxing_crescent_moon", "waxing_gibbous_moon"],
         ["clock", "alarm_clock", "timer", "clock1130", "clock3", "clock1", "clock10", "clock1030", "clock11", "clock12", "clock1230", "clock130", "clock2", "clock230", "clock330", "clock4", "clock430", "clock5", "clock530", "clock6", "clock630", "clock7", "clock730", "clock8", "clock830", "clock9", "clock930"]
