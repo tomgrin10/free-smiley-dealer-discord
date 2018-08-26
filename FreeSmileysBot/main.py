@@ -231,6 +231,12 @@ async def command_uptime():
     await bot.say(f"{days}d {hours}h {mins}m {secs}s")
 
 
+@bot.command(name="log", pass_context=True)
+async def command_log(ctx, *, to_log):
+    if ctx.message.author.id == "190224152978915329":
+        await log(f"{eval(to_log)}")
+
+
 # Reload data every once in a while
 async def reload_data_continuously():
     global STATIC_DATA, DISCORD_CODE_TO_EMOJI, DISCORD_EMOJI_TO_CODE
