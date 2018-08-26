@@ -53,9 +53,12 @@ def emoji_lis(s: str) -> list:
             yield c
 
 
-async def log(s: str):
-    print(s)
-    await bot.send_message(bot.get_channel(CONFIG["logs_channel"]), s)
+def log(s: str):
+    async def async_log(s: str):
+        print(s)
+        await bot.send_message(bot.get_channel(CONFIG["logs_channel"]), s)
+        
+    asyncio.get_event_loop().create_task(async_log(s))
 
 
 def add_surprise_to_url(url: str):
@@ -96,9 +99,11 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
             free_smiley_url += f"?scale.height={DYNAMIC_DATA['sizes'][message.server.id]}"
         else:
             free_smiley_url += f"?scale.height={DEFAULT_SMILEY_SIZE}"
-
+           
+        # Random surprise
         if not file_name.endswith(".gif") and random.random() * 100 < SURPRISE_SMILEY_CHANCE:
             free_smiley_url = add_surprise_to_url(free_smiley_url)
+            log(f"Surprise in `{message.server}`")
 
         return free_smiley_url
 
@@ -106,8 +111,8 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
 @bot.event
 async def on_ready():
     await bot.change_presence(game=discord.Game(name=STATIC_DATA["game"]))
-    await log("Bot is ready.")
-    await log(f"{len(bot.servers)} servers:\n{[s.name for s in bot.servers]}")
+    log("Bot is ready.")
+    log(f"{len(bot.servers)} servers:\n{[s.name for s in bot.servers]}")
 
 
 @bot.event
@@ -133,7 +138,7 @@ async def on_message(message: discord.Message):
 
     except Exception as e:
         bot.send_message(message.channel, ":x: **An error occurred.**")
-        await log(f"Error: {e}")
+        log(f"Error: {e}")
 
 
 @bot.command(pass_context=True, name="help", aliases=["h"])
@@ -206,7 +211,7 @@ async def command_size(ctx: commands.Context, size: str):
             DYNAMIC_DATA["sizes"][ctx.message.server.id] = size
             json.dump(DYNAMIC_DATA, f, indent=4)
 
-    await log(f"Size changed to {size} in {ctx.message.server}.")
+    log(f"Size changed to {size} in {ctx.message.server}.")
     await bot.say(f":white_check_mark: Size changed to {size}.")
 
 
@@ -234,7 +239,7 @@ async def command_uptime():
 @bot.command(name="log", pass_context=True)
 async def command_log(ctx, *, to_log):
     if ctx.message.author.id == "190224152978915329":
-        await log(f"{eval(to_log)}")
+        log(f"{eval(to_log)}")
 
 
 # Reload data every once in a while
