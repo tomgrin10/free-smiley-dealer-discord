@@ -8,6 +8,7 @@ import datetime
 import urllib.parse
 import pathlib
 import requests
+import furl
 
 # Constants
 CONFIG_FILENAME = "config.json"
@@ -17,6 +18,7 @@ DYNAMIC_DATA_FILENAME = "dynamic_data.json"
 DEFAULT_SMILEY_SIZE = 150
 MIN_SMILEY_SIZE = 40
 MAX_SMILEY_SIZE = 300
+SURPRISE_SMILEY_CHANCE = 1
 T0 = time.time()
 
 # Load data
@@ -56,7 +58,13 @@ async def log(s: str):
     await bot.send_message(bot.get_channel(CONFIG["logs_channel"]), s)
 
 
-def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: int = None):
+def add_surprise_to_url(url: str):
+    return furl.furl(url).add({"hue": random.randint(-100, 100),
+                               "saturation": random.randint(-100, 100),
+                               "lightness": random.randint(-100, 100)}).url
+
+
+def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: int = None, allow_surprise=False):
     # Iterate emojis in message
     for p_smileys in STATIC_DATA["smileys"]:
         if emoji_name not in p_smileys:
@@ -71,7 +79,7 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
         if smiley_num is None:
             # Get random smiley
             try:
-                smiley_name = random.choice(dir_json['files'])['name']
+                file_name = random.choice(dir_json['files'])['name']
             except IndexError:
                 return
         else:
@@ -79,15 +87,18 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
             matches = list(filter(lambda file: str(smiley_num) in file["name"], dir_json["files"]))
             if len(matches) == 0:
                 return
-            smiley_name = matches[0]["name"]
+            file_name = matches[0]["name"]
 
-        free_smiley_url = f"{dir_url}/{urllib.parse.quote(smiley_name)}"
+        free_smiley_url = f"{dir_url}/{urllib.parse.quote(file_name)}"
 
         # Attach height parameter to url
         if message.server.id in DYNAMIC_DATA['sizes']:
             free_smiley_url += f"?scale.height={DYNAMIC_DATA['sizes'][message.server.id]}"
         else:
             free_smiley_url += f"?scale.height={DEFAULT_SMILEY_SIZE}"
+
+        if not file_name.endswith(".gif") and random.random() * 100 < SURPRISE_SMILEY_CHANCE:
+            free_smiley_url = add_surprise_to_url(free_smiley_url)
 
         return free_smiley_url
 
@@ -107,7 +118,7 @@ async def on_message(message: discord.Message):
             return
 
         for emoji in emoji_lis(message.content):
-            url = get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message)
+            url = get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message, allow_surprise=True)
             if url is not None:
                 print(message.content + " detected.")
 
