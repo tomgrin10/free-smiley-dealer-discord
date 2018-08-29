@@ -13,6 +13,7 @@
         "Look at him, he is paying for smileys!",
         "Whoa whoa whoa. What is that?"
     ],
+    "surprise_chance": 1.5,
     "base_url": "https://lusaustr.sirv.com/smileys",
     
     "smileys": [

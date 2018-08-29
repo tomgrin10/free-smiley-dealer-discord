@@ -18,7 +18,6 @@ DYNAMIC_DATA_FILENAME = "dynamic_data.json"
 DEFAULT_SMILEY_SIZE = 150
 MIN_SMILEY_SIZE = 40
 MAX_SMILEY_SIZE = 300
-SURPRISE_SMILEY_CHANCE = 1
 T0 = time.time()
 
 # Load data
@@ -101,7 +100,7 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: i
             free_smiley_url += f"?scale.height={DEFAULT_SMILEY_SIZE}"
            
         # Random surprise
-        if not file_name.endswith(".gif") and random.random() * 100 < SURPRISE_SMILEY_CHANCE:
+        if not file_name.endswith(".gif") and random.random() * 100 < STATIC_DATA["surprise_chance"]:
             free_smiley_url = add_surprise_to_url(free_smiley_url)
             log(f"Surprise in `{message.server}`")
 
