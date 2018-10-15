@@ -161,7 +161,7 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: s
 async def on_ready():
     await bot.change_presence(game=discord.Game(name=STATIC_DATA["game"]))
     log("Bot is ready.")
-    log(f"{len(bot.guilds)} guilds:\n{[g.name for g in bot.guilds]}")
+    log(f"{len(bot.guilds)} guilds:\n{[g.name for g in sorted(bot.guilds, key=lambda g: g.member_count, reverse=True)]}")
 
 
 @bot.event
@@ -282,7 +282,7 @@ async def command_uptime(ctx):
 async def command_log(ctx, *, to_log):
     shortcuts = {
         "len": "len(bot.guilds)",
-        "guilds": "[g.name for g in bot.guilds]",
+        "names": "[g.name for g in sorted(bot.guilds, key=lambda g: g.member_count, reverse=True)]",
     }
 
     if to_log in shortcuts:
