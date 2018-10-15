@@ -168,7 +168,7 @@ async def on_ready():
 async def on_message(message: discord.Message):
     try:
         # Check if not myself
-        if message.author == bot.user:
+        if message.author == bot.user or message.author.bot:
             return
 
         for emoji in emoji_lis(message.content):
