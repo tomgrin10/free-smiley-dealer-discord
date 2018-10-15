@@ -140,7 +140,7 @@ def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: s
                 log(f"Surprise in `{message.guild}`")
 
             # Halloween spooker
-            elif random.random * 100 < 50:
+            elif random.random() * 100 < 50:
                 curr_date = datetime.datetime.now()
                 start_date = datetime.datetime(curr_date.year, 10, 15, 0)
                 halloween_date = datetime.datetime(curr_date.year, 10, 31, 0)
