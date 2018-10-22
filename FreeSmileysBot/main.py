@@ -1,6 +1,6 @@
 import discord
 from discord.ext import commands
-from typing import Union
+from typing import *
 import asyncio
 import json
 import random
@@ -10,6 +10,8 @@ import urllib.parse
 import pathlib
 import requests
 import furl
+import dbl
+import logging
 
 # Constants
 MESSAGE_CHARACTER_LIMIT = 2000
@@ -47,36 +49,66 @@ bot: commands.Bot = commands.Bot(
 bot.remove_command("help")
 
 
+class DiscordBotsOrgAPI:
+    """Handles interactions with the discordbots.org API"""
+
+    def __init__(self, bot, api_key):
+        self.bot = bot
+        self.token = api_key  # set this to your DBL token
+        self.dblpy = dbl.Client(self.bot, self.token)
+        self.bot.loop.create_task(self.update_stats())
+
+    async def update_stats(self):
+        """This function runs every 30 minutes to automatically update your server count"""
+
+        while True:
+            logger.info('attempting to post server count')
+            try:
+                await self.dblpy.post_server_count()
+                logger.info(f'posted server count ({len(self.bot.guilds)})')
+            except Exception as e:
+                logger.exception(f'Failed to post server count\n{type(e).__name__}: {e}')
+            await asyncio.sleep(1800)
+
+
+def setup_dbl(bot, api_key):
+    global logger
+    logger = logging.getLogger('bot')
+    bot.add_cog(DiscordBotsOrgAPI(bot, api_key))
+
+
 # List all emojis in message
-def emoji_lis(s: str) -> list:
+def emoji_lis(s: str) -> Iterable[str]:
     for c in s:
         if c in DISCORD_EMOJI_TO_CODE:
             yield c
 
 
-def split_message_for_discord(content: str, divider: str = None):
+def split_message_for_discord(content: str, divider: str = None) -> Iterable[str]:
     if divider is None:
         segments = content
     else:
         segments = [s + divider for s in content.split(divider)]
 
-    messages = [""]
+    message = ""
     for segment in segments:
-        if len(messages[len(messages) - 1]) + len(segment) >= MESSAGE_CHARACTER_LIMIT:
-            messages.append(segment)
+        if len(message) + len(segment) >= MESSAGE_CHARACTER_LIMIT:
+            yield message
+            message = ""
         else:
-            messages[len(messages) - 1] += segment
+            message += segment
 
-    return messages
+    yield message
 
 
-def log(s: str):
-    async def async_log(s: str):
-        print(s)
-        for segment in split_message_for_discord(s):
-            await bot.get_channel(CONFIG["logs_channel"]).send(segment)
-        
-    asyncio.create_task(async_log(s))
+def log(content: str, channel: discord.TextChannel = None):
+    async def async_log(content: str, channel: discord.TextChannel):
+        print(content)
+        for segment in split_message_for_discord(content):
+            await channel.send(segment)
+
+    channel = channel if channel else bot.get_channel(CONFIG["logs_channel"])
+    asyncio.create_task(async_log(content, channel))
 
 
 def rand_color_image_url(url: str) -> str:
@@ -90,7 +122,8 @@ def spookify_image_url(url: str, spook_value: int) -> str:
     return furl.furl(url).add({k: round(v * spook_value) for k, v in max_values.items()})
 
 
-def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: str = None, allow_surprise=False) -> Union[str, None]:
+def get_free_smiley_url(emoji_name: str, message: discord.Message, smiley_num: str = None,
+                        allow_surprise=False) -> Union[str, None]:
     # Iterate emojis in message
     for p_smileys in STATIC_DATA["smileys"]:
         if emoji_name not in p_smileys:
@@ -214,7 +247,7 @@ Sets the size of the smileys. (default:`150`) (between `40-300`)
 Invite me to your guild!""")
     embed.add_field(name=":red_circle: support", value="""
 Come to my support guild for help or suggestions!""")
-    
+
     await ctx.author.send(content, embed=embed)
 
 
@@ -268,7 +301,7 @@ async def command_support(ctx):
     if "support" in CONFIG and CONFIG["support"] is not None:
         await ctx.send(CONFIG["support"])
 
-    
+
 @bot.command(name="uptime")
 async def command_uptime(ctx):
     delta = datetime.timedelta(seconds=time.time() - T0)
@@ -309,5 +342,6 @@ async def reload_data_continuously():
             await sleep_task
 
 
+setup_dbl(bot, CONFIG["dbl_api_key"])
 bot.loop.create_task(reload_data_continuously())
 bot.run(CONFIG["token"])
