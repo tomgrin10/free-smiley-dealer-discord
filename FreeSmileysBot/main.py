@@ -190,6 +190,9 @@ class FreeSmileyDealerBot(commands.Bot):
             # Check if not myself
             if message.author == self.user or message.author.bot:
                 return
+            # Check if I can write
+            if not message.guild.me.permissions_in(message.channel).send_messages:
+                return
 
             for emoji in emoji_lis(message.content):
                 url = self.get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message, allow_surprise=True)
@@ -330,6 +333,6 @@ class LoggingHandler(logging.Handler):
 
 if __name__ == "__main__":
     bot = FreeSmileyDealerBot()
-    logging.basicConfig(handlers=(LoggingHandler(bot),))
+    logging.basicConfig(level=logging.INFO, handlers=(LoggingHandler(bot),))
     bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
     bot.run()
