@@ -1,9 +1,9 @@
-from DBLAPI import DiscordBotsOrgAPI
+from cogs.dblapi import DiscordBotsOrgAPI
 import discord
 from discord.ext import commands
 from typing import *
 import asyncio
-from contextlib import contextmanager, asynccontextmanager
+from contextlib import asynccontextmanager
 import logging
 import json
 import random
@@ -29,6 +29,12 @@ T0 = time.time()
 with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
     DISCORD_CODE_TO_EMOJI = json.load(f)
     DISCORD_EMOJI_TO_CODE = {v: k for k, v in DISCORD_CODE_TO_EMOJI.items()}
+
+
+def fix_data_structure(data: dict, template: dict):
+    for key in template:
+        if key not in data:
+            data[key] = template[key]
 
 
 # List all emojis in message
@@ -76,6 +82,7 @@ class FreeSmileyDealerBot(commands.Bot):
             self.static_data = json.load(f)
 
         self.dynamic_data_filename = DYNAMIC_DATA_FILENAME
+        #dynamic_data_template = {"sizes": {}, ""}
         if pathlib.Path(DYNAMIC_DATA_FILENAME).is_file():
             with open(DYNAMIC_DATA_FILENAME, 'r') as f:
                 self.dynamic_data = json.load(f)
@@ -93,6 +100,7 @@ class FreeSmileyDealerBot(commands.Bot):
 
     def run(self):
         super().run(self.config["token"])
+
 
     @asynccontextmanager
     async def save_dynamic_data(self):
@@ -212,97 +220,7 @@ class FreeSmileyDealerBot(commands.Bot):
             message.channel.send(":x: **An error occurred.**")
             logging.exception("")
 
-    @commands.command(name="help", aliases=["h"])
-    async def command_help(self, ctx: commands.Context):
-        await ctx.send("""
-    If you use **paid smileys (emojis)** in your message, I will correct you.
-    **Try it out!** Type `:joy:`
-    
-    For more epic commands look in your **private messages**!""")
-
-        content = """
-    If you use **paid smileys (emojis)** in your message, I will correct you.
-    **Try it out!** Type `:joy:`"""
-        embed = discord.Embed(title=":information_source: Commands - s!", color=0xf3f702)
-        embed.add_field(name=":red_circle: smiley/s", value="""
-    If you just want to get **free smileys** without using paid smileys.
-    **Format:** `s!s <name> <number(optional)>`
-    **Examples:** `s!s grin`, `s!s cry 2`""")
-        embed.add_field(name=":red_circle: size/height", value="""
-    Sets the size of the smileys. (default:`150`) (between `40-300`)
-    **Format:** `s!size <size>`
-    **Example:** `s!size 200`""")
-        embed.add_field(name=":red_circle: invite/inv", value="""
-    Invite me to your guild!""")
-        embed.add_field(name=":red_circle: support", value="""
-    Come to my support guild for help or suggestions!""")
-
-        await ctx.author.send(content, embed=embed)
-
-    @commands.command(name="smiley", aliases=["s"])
-    async def command_smiley(self, ctx: commands.Context, emoji_name: str, smiley_num: str = None):
-        url = self.get_free_smiley_url(emoji_name, ctx.message, smiley_num=smiley_num)
-        if url is not None:
-            print(ctx.message.content + " detected.")
-            await ctx.send(url)
-        else:
-            await ctx.send(":x: **Smiley not found.**")
-
-    @commands.command(name="size", aliases=["height"])
-    async def command_size(self, ctx: commands.Context, size: str):
-        # Check for permissions
-        if not ctx.author.guild_permissions.manage_channels:
-            await ctx.send(":x: **This command requires you to have `Manage Channels` permission to use it.**")
-            return
-
-        # Validate size parameter
-        try:
-            size = int(size)
-        except ValueError:
-            await ctx.send(":x: **Invalid size.**")
-            return
-
-        if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
-            await ctx.send(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
-            return
-
-        # Lock thread
-        async with self.save_dynamic_data():
-            self.dynamic_data["sizes"][str(ctx.guild.id)] = size
-
-        logging.info(f"Size changed to {size} in {ctx.message.guild}.")
-        await ctx.send(f":white_check_mark: Size changed to {size}.")
-
-    @commands.command(name="invite", aliases=["inv"])
-    async def command_invite(self, ctx):
-        if "invite" in self.config and self.config["invite"] is not None:
-            await ctx.send(self.config["invite"])
-
-    @commands.command(name="support")
-    async def command_support(self, ctx):
-        if "support" in self.config and self.config["support"] is not None:
-            await ctx.send(self.config["support"])
-
-    @commands.command(name="uptime")
-    async def command_uptime(self, ctx):
-        delta = datetime.timedelta(seconds=time.time() - T0)
-        days = delta.days
-        hours, rem = divmod(delta.seconds, 3600)
-        mins, secs = divmod(rem, 60)
-        await ctx.send(f"{days}d {hours}h {mins}m {secs}s")
-
-    @commands.command(name="log")
-    async def command_log(self, ctx, *, to_log):
-        shortcuts = {
-            "len": "len(bot.guilds)",
-            "names": "[g.name for g in sorted(bot.guilds, key=lambda g: g.member_count, reverse=True)]",
-        }
-
-        if to_log in shortcuts:
-            to_log = shortcuts[to_log]
-
-        if ctx.author.id == 190224152978915329:
-            logging.info(f"{eval(to_log)}")
+    # TODO - FIX EVERYTHING
 
     # Reload data every once in a while
     async def reload_data_continuously(self):
@@ -335,4 +253,104 @@ if __name__ == "__main__":
     bot = FreeSmileyDealerBot()
     logging.basicConfig(level=logging.INFO, handlers=(LoggingHandler(bot),))
     bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
+
+
+    @bot.command(name="help", aliases=["h"])
+    async def command_help(ctx: commands.Context):
+        await ctx.send("""
+        If you use **paid smileys (emojis)** in your message, I will correct you.
+        **Try it out!** Type `:joy:`
+
+        For more epic commands look in your **private messages**!""")
+
+        content = """
+        If you use **paid smileys (emojis)** in your message, I will correct you.
+        **Try it out!** Type `:joy:`"""
+        embed = discord.Embed(title=":information_source: Commands - s!", color=0xf3f702)
+        embed.add_field(name=":red_circle: smiley/s", value="""
+        If you just want to get **free smileys** without using paid smileys.
+        **Format:** `s!s <name> <number(optional)>`
+        **Examples:** `s!s grin`, `s!s cry 2`""")
+        embed.add_field(name=":red_circle: size/height", value="""
+        Sets the size of the smileys. (default:`150`) (between `40-300`)
+        **Format:** `s!size <size>`
+        **Example:** `s!size 200`""")
+        embed.add_field(name=":red_circle: invite/inv", value="""
+        Invite me to your guild!""")
+        embed.add_field(name=":red_circle: support", value="""
+        Come to my support guild for help or suggestions!""")
+
+        await ctx.author.send(content, embed=embed)
+
+
+    @bot.command(name="smiley", aliases=["s"])
+    async def command_smiley(ctx: commands.Context, emoji_name: str, smiley_num: str = None):
+        url = bot.get_free_smiley_url(emoji_name, ctx.message, smiley_num=smiley_num)
+        if url is not None:
+            print(ctx.message.content + " detected.")
+            await ctx.send(url)
+        else:
+            await ctx.send(":x: **Smiley not found.**")
+
+
+    @bot.command(name="size", aliases=["height"])
+    async def command_size(ctx: commands.Context, size: str):
+        # Check for permissions
+        if not ctx.author.guild_permissions.manage_channels:
+            await ctx.send(":x: **This command requires you to have `Manage Channels` permission to use it.**")
+            return
+
+        # Validate size parameter
+        try:
+            size = int(size)
+        except ValueError:
+            await ctx.send(":x: **Invalid size.**")
+            return
+
+        if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
+            await ctx.send(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
+            return
+
+        # Lock thread
+        async with bot.save_dynamic_data():
+            bot.dynamic_data["sizes"][str(ctx.guild.id)] = size
+
+        logging.info(f"Size changed to {size} in {ctx.message.guild}.")
+        await ctx.send(f":white_check_mark: Size changed to {size}.")
+
+
+    @bot.command(name="invite", aliases=["inv"])
+    async def command_invite(ctx):
+        if "invite" in bot.config and bot.config["invite"] is not None:
+            await ctx.send(bot.config["invite"])
+
+
+    @bot.command(name="support")
+    async def command_support(ctx):
+        if "support" in bot.config and bot.config["support"] is not None:
+            await ctx.send(bot.config["support"])
+
+
+    @bot.command(name="uptime")
+    async def command_uptime(ctx):
+        delta = datetime.timedelta(seconds=time.time() - T0)
+        days = delta.days
+        hours, rem = divmod(delta.seconds, 3600)
+        mins, secs = divmod(rem, 60)
+        await ctx.send(f"{days}d {hours}h {mins}m {secs}s")
+
+
+    @bot.command(name="log")
+    async def command_log(ctx, *, to_log):
+        shortcuts = {
+            "len": "len(bot.guilds)",
+            "names": "[g.name for g in sorted(bot.guilds, key=lambda g: g.member_count, reverse=True)]",
+        }
+
+        if to_log in shortcuts:
+            to_log = shortcuts[to_log]
+
+        if ctx.author.id == 190224152978915329:
+            logging.info(f"{eval(to_log)}")
+    
     bot.run()
