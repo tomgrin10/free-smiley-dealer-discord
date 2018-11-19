@@ -1,7 +1,8 @@
-from discord.ext import commands
 import asyncio
-import dbl
 import logging
+
+import dbl
+from discord.ext import commands
 
 
 class DiscordBotsOrgAPI:
@@ -23,5 +24,5 @@ class DiscordBotsOrgAPI:
                 await self.dblpy.post_server_count()
                 logging.info(f'posted server count ({len(self.bot.guilds)})')
             except Exception as e:
-                logging.error(f'Failed to post server count\n{type(e).__name__}: {e}')
+                logging.exception(f'Failed to post server count\n{type(e).__name__}: {e}')
             await asyncio.sleep(1800)

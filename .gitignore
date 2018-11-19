@@ -8,3 +8,5 @@ FreeSmileysBot/test\.py
 FreeSmileysBot/dynamic_data\.json
 
 __pycache__/
+
+log.txt

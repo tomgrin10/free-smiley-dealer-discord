@@ -1,16 +1,17 @@
 import asyncio
-import logging
 import json
+import logging
 from typing import *
 
 import discord
 from discord.ext import commands
 
-from cogs.dblapi import DiscordBotsOrgAPI
 import cogs.smileydealer as smileydealer
+from cogs.dblapi import DiscordBotsOrgAPI
 
 # Constants
 CONFIG_FILENAME = "config.json"
+LOG_FILENAME = "log.txt"
 MESSAGE_CHARACTER_LIMIT = 2000
 
 
@@ -55,7 +56,11 @@ class BasicBot(commands.Bot):
 
 if __name__ == "__main__":
     bot = BasicBot()
-    logging.basicConfig(level=logging.INFO, handlers=(smileydealer.LoggingHandler(bot),))
+    logging.basicConfig(
+        level=logging.INFO,
+        handlers=(smileydealer.LoggingHandler(bot), logging.FileHandler(LOG_FILENAME)),
+        format="**{levelname}:** *{asctime}*\n{message}", style="{",
+        datefmt="%d-%m-%Y %H:%M:%S")
     bot.add_cog(smileydealer.FreeSmileyDealerCog(bot))
     bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
     bot.run()

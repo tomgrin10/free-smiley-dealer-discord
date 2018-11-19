@@ -1,18 +1,19 @@
-from typing import *
 import asyncio
-from contextlib import asynccontextmanager
-import logging
+import datetime
 import json
+import logging
+import pathlib
 import random
 import time
-import datetime
 import urllib.parse
-import pathlib
+from contextlib import asynccontextmanager
+from typing import *
 
 import discord
-from discord.ext import commands
-import requests
 import furl
+import pymongo
+import requests
+from discord.ext import commands
 
 from bot import BasicBot
 
@@ -56,6 +57,9 @@ def spookify_image_url(url: str, spook_value: int) -> str:
 
 class FreeSmileyDealerCog:
     def __init__(self, bot: BasicBot):
+        #def setup_db():
+        #    self.mongodb_client = pymongo.MongoClient('localhost', 27017)
+
         self.bot = bot
 
         self.static_data_filename = STATIC_DATA_FILENAME
