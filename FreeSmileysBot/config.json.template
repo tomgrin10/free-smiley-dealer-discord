@@ -1,5 +1,7 @@
 {
     "token": null,
+    "prefix": null,
+    "dbl_api_key": null,
     "invite": null,
     "support": null,
     "logs_channel": null

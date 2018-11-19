@@ -1,5 +1,4 @@
 {
-    "prefix": "s!",
     "game": "with free smileys | s!help",
     "titles": [
         "Only free smileys here.",
@@ -13,6 +12,7 @@
         "Look at him, he is paying for smileys!",
         "Whoa whoa whoa. What is that?"
     ],
+    "default_smiley_size": 120,
     "surprise_chance": 1.5,
     "golden_ralf_chance": 7,
     "base_url": "https://lusaustr.sirv.com/smileys",
