@@ -6,3 +6,5 @@ FreeSmileysBot/config\.json
 FreeSmileysBot/test\.py
 
 FreeSmileysBot/dynamic_data\.json
+
+__pycache__/
