@@ -189,27 +189,27 @@ class FreeSmileyDealerCog:
     @commands.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context):
         await ctx.send("""
-    If you use **paid smileys (emojis)** in your message, I will correct you.
-    **Try it out!** Type `:joy:`
+If you use **paid smileys (emojis)** in your message, I will correct you.
+**Try it out!** Type `:joy:`
 
-    For more epic commands look in your **private messages**!""")
+For more epic commands look in your **private messages**!""")
 
         content = """
-    If you use **paid smileys (emojis)** in your message, I will correct you.
-    **Try it out!** Type `:joy:`"""
+If you use **paid smileys (emojis)** in your message, I will correct you.
+**Try it out!** Type `:joy:`"""
         embed = discord.Embed(title=":information_source: Commands - s!", color=0xf3f702)
         embed.add_field(name=":red_circle: smiley/s", value="""
-    If you just want to get **free smileys** without using paid smileys.
-    **Format:** `s!s <name> <number(optional)>`
-    **Examples:** `s!s grin`, `s!s cry 2`""")
+If you just want to get **free smileys** without using paid smileys.
+**Format:** `s!s <name> <number(optional)>`
+**Examples:** `s!s grin`, `s!s cry 2`""")
         embed.add_field(name=":red_circle: size/height", value="""
-    Sets the size of the smileys. (default:`150`) (between `40-300`)
-    **Format:** `s!size <size>`
-    **Example:** `s!size 200`""")
+Sets the size of the smileys. (default:`150`) (between `40-300`)
+**Format:** `s!size <size>`
+**Example:** `s!size 200`""")
         embed.add_field(name=":red_circle: invite/inv", value="""
-    Invite me to your guild!""")
+Invite me to your guild!""")
         embed.add_field(name=":red_circle: support", value="""
-    Come to my support guild for help or suggestions!""")
+Come to my support guild for help or suggestions!""")
 
         await ctx.author.send(content, embed=embed)
 
@@ -268,8 +268,8 @@ class FreeSmileyDealerCog:
     @commands.command(name="log")
     async def command_log(self, ctx, *, to_log):
         shortcuts = {
-            "len": "len(bot.guilds)",
-            "names": "[g.name for g in sorted(bot.guilds, key=lambda g: g.member_count, reverse=True)]",
+            "len": "len(self.bot.guilds)",
+            "names": "[g.name for g in sorted(self.bot.guilds, key=lambda g: g.member_count, reverse=True)]",
         }
 
         if to_log in shortcuts:
