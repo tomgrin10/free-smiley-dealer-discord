@@ -1,4 +1,5 @@
 import asyncio
+from bson import ObjectId
 import datetime
 import json
 import logging
@@ -20,7 +21,6 @@ from bot import BasicBot
 # Constants
 STATIC_DATA_FILENAME = "static_data.json"
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
-DYNAMIC_DATA_FILENAME = "dynamic_data.json"
 MIN_SMILEY_SIZE = 40
 MAX_SMILEY_SIZE = 300
 T0 = time.time()
@@ -29,12 +29,6 @@ T0 = time.time()
 with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
     DISCORD_CODE_TO_EMOJI = json.load(f)
     DISCORD_EMOJI_TO_CODE = {v: k for k, v in DISCORD_CODE_TO_EMOJI.items()}
-
-
-def fix_data_structure(data: dict, template: dict):
-    for key in template:
-        if key not in data:
-            data[key] = template[key]
 
 
 # List all emojis in message
@@ -56,39 +50,86 @@ def spookify_image_url(url: str, spook_value: int) -> str:
 
 
 class FreeSmileyDealerCog:
-    def __init__(self, bot: BasicBot):
-        #def setup_db():
-        #    self.mongodb_client = pymongo.MongoClient('localhost', 27017)
+    class Database:
+        """
+        Class representing a MongoDB database
+        """
+        def __init__(self, static_data):
+            self._static_data = static_data
+            self._client = pymongo.MongoClient()
+            self._db = self._client["smiley_dealer"]
+            self.data_fixer_upper()
 
+        def get_setting(self, setting_name: str, guild_id: int, channel_id: int):
+            """
+            Gets channel-specific/guild-specific or global default setting by name
+            :param setting_name: Name of the setting
+            :return: The setting value
+            """
+            def get_setting_from_database():
+                guild_doc = self._db["guilds"].find_one({"_id": str(guild_id)})
+                print(guild_id)
+
+                # If guild has no document at all
+                if not guild_doc:
+                    return None
+
+                # Try to get channel-specific setting
+                try:
+                    return guild_doc["settings"][str(channel_id)][setting_name]
+                except KeyError:
+                    pass
+
+                # Try to get guild-specific setting
+                try:
+                    return guild_doc["settings"]["default"][setting_name]
+                except KeyError:
+                    pass
+
+                return None
+
+            # Try to get setting from database and return it if found
+            setting_value = get_setting_from_database()
+            if setting_value:
+                return setting_value
+
+            # There wasn't a setting so return global default
+            return self._static_data["default_settings"][setting_name]
+
+        def data_fixer_upper(self):
+            path = pathlib.Path("dynamic_data.json")
+            if path.is_file():
+                with path.open() as f:
+                    data = json.load(f)
+
+                for guild_id, size in data["sizes"].items():
+                    self._db["guilds"].update_one({"_id": str(guild_id)}, {"$set": {"settings.default.smiley_size": size}}, upsert=True)
+
+                path.unlink()
+                logging.info("Data has been *Fixer Upper*ed")
+
+    def __init__(self, bot: BasicBot):
         self.bot = bot
 
         self.static_data_filename = STATIC_DATA_FILENAME
         with open(STATIC_DATA_FILENAME, 'r') as f:
             self.static_data = json.load(f)
 
-        self.dynamic_data_filename = DYNAMIC_DATA_FILENAME
-        # dynamic_data_template = {"sizes": {}, ""}
-        if pathlib.Path(DYNAMIC_DATA_FILENAME).is_file():
-            with open(DYNAMIC_DATA_FILENAME, 'r') as f:
-                self.dynamic_data = json.load(f)
-        else:
-            with open(DYNAMIC_DATA_FILENAME, 'w') as f:
-                self.dynamic_data = {"sizes": {}}
-                json.dump(self.dynamic_data, f, indent=4)
-        self._dynamic_data_lock = asyncio.Lock()
+        self.db = FreeSmileyDealerCog.Database(self.static_data)
 
         self.bot.remove_command("help")
         self.bot.loop.create_task(self.reload_data_continuously())
 
-    @asynccontextmanager
-    async def save_dynamic_data(self):
-        async with self._dynamic_data_lock:
-            with open(DYNAMIC_DATA_FILENAME, 'w') as f:
-                yield
-                json.dump(self.dynamic_data, f, indent=4)
-
     def get_free_smiley_url(self, emoji_name: str, message: discord.Message, smiley_num: str = None,
                             allow_surprise=False) -> Union[str, None]:
+        """
+        Returns an image url of the matching smiley with given parameters
+        :param emoji_name: Name of the emoji to convert from.
+        :param message: The message object
+        :param smiley_num: Specification of the smiley to get from the folder
+        :param allow_surprise: Allow surprises on the smiley or not
+        :return: The image url
+        """
         # Iterate emojis in message
         for p_smileys in self.static_data["smileys"]:
             if emoji_name not in p_smileys:
@@ -125,10 +166,7 @@ class FreeSmileyDealerCog:
             free_smiley_url = f"{dir_url}/{urllib.parse.quote(file_name)}"
 
             # Attach height parameter to url
-            if str(message.guild.id) in self.dynamic_data['sizes']:
-                free_smiley_url += f"?scale.height={self.dynamic_data['sizes'][str(message.guild.id)]}"
-            else:
-                free_smiley_url += f"?scale.height={self.static_data['default_smiley_size']}"
+            free_smiley_url += f"?scale.height={self.db.get_setting('smiley_size', message.guild.id, message.channel.id)}"
 
             # Random surprises
             if allow_surprise and not file_name.endswith(".gif"):
@@ -154,7 +192,7 @@ class FreeSmileyDealerCog:
 
             return free_smiley_url
 
-    async def on_error(self, event_method, *args, **kwargs):
+    async def on_error(self):
         logging.exception("")
 
     async def on_ready(self):
@@ -174,6 +212,7 @@ class FreeSmileyDealerCog:
             if not message.guild.me.permissions_in(message.channel).send_messages:
                 return
 
+            # Iterate every emoji in the message and try to get the free smiley
             for emoji in emoji_lis(message.content):
                 url = self.get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message, allow_surprise=True)
                 if url is not None:
@@ -182,8 +221,8 @@ class FreeSmileyDealerCog:
                     # Create the embed
                     embed = discord.Embed(title=random.choice(self.static_data["titles"]))
                     embed.set_image(url=url)
-                    await message.channel.send(content=f"{message.author.mention}", embed=embed)
 
+                    await message.channel.send(content=f"{message.author.mention}", embed=embed)
                     break
 
         except Exception as e:
@@ -192,12 +231,12 @@ class FreeSmileyDealerCog:
 
     @commands.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context):
-        await ctx.send("""
-If you use **paid smileys (emojis)** in your message, I will correct you.
-**Try it out!** Type `:joy:`
+        help_message = """
+:joy: -> <:SmileyJoy:514101595609235456> If you use paid smileys (emojis) in your message, I will correct you.
+Type `:joy:` to try it out!
 
-For more epic commands look in your **private messages**!""")
-
+:scroll: For more commands look at your private messages."""
+        await ctx.send(help_message)
         content = """
 If you use **paid smileys (emojis)** in your message, I will correct you.
 **Try it out!** Type `:joy:`"""
@@ -219,7 +258,7 @@ Come to my support guild for help or suggestions!""")
 
     @commands.command(name="smiley", aliases=["s"])
     async def command_smiley(self, ctx: commands.Context, emoji_name: str, smiley_num: str = None):
-        url = self.get_free_smiley_url(emoji_name, ctx.message, smiley_num=smiley_num)
+        url = self.get_free_smiley_url(emoji_name.replace(':', ''), ctx.message, smiley_num=smiley_num)
         if url is not None:
             print(ctx.message.content + " detected.")
             await ctx.send(url)
@@ -244,9 +283,10 @@ Come to my support guild for help or suggestions!""")
             await ctx.send(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
             return
 
-        # Lock thread
-        async with self.save_dynamic_data():
-            self.dynamic_data["sizes"][str(ctx.guild.id)] = size
+        confirmation_msg = ctx.send("Are you sure")
+
+        # Update database
+        result = self.db._db["guilds"].update_one({"_id": str(ctx.guild.id)}, {"$set": {"settings.default.smiley_size": size}}, upsert=True)
 
         logging.info(f"Size changed to {size} in {ctx.message.guild}.")
         await ctx.send(f":white_check_mark: Size changed to {size}.")

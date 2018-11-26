@@ -47,11 +47,21 @@ class BasicBot(commands.Bot):
     def log(self, content: str, channel: discord.TextChannel = None):
         async def async_log(content: str, channel: discord.TextChannel):
             print(content)
+            content = content.replace("@everyone", "`@everyone`").replace("@here", "`@here`")
             for segment in split_message_for_discord(content):
                 await channel.send(segment)
 
         channel = channel if channel else self.get_channel(self.config["logs_channel"])
         asyncio.create_task(async_log(content, channel))
+
+    async def ask_question(self, message: discord.Message, user: discord.User, reactions=('✅', '❌'), timeout: int = 60) -> discord.Reaction:
+        check = lambda r, u: u == user and str(r.emoji) in [str(r.emoji) for r in reactions]
+
+        for r in reactions:
+            await message.add_reaction(r)
+
+        reaction = (await self.wait_for("reaction_add", timeout=timeout, check=check))[0]
+        return reaction
 
 
 if __name__ == "__main__":
@@ -59,8 +69,8 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         handlers=(smileydealer.LoggingHandler(bot), logging.FileHandler(LOG_FILENAME)),
-        format="**{levelname}:** *{asctime}*\n{message}", style="{",
-        datefmt="%d-%m-%Y %H:%M:%S")
+        datefmt="%d-%m-%Y %H:%M:%S",
+        format="**{levelname}:** *{asctime}*\n{message}", style="{")
     bot.add_cog(smileydealer.FreeSmileyDealerCog(bot))
     bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
     bot.run()
