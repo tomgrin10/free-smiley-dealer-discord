@@ -82,6 +82,9 @@ if __name__ == "__main__":
         handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME)),
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}", style="{")
-    bot.add_cog(smileydealer.FreeSmileyDealerCog(bot))
-    bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
-    bot.run()
+    try:
+        bot.add_cog(smileydealer.FreeSmileyDealerCog(bot))
+        bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
+        bot.run()
+    except Exception:
+        logging.exception("")
