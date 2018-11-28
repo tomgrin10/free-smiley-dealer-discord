@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import sys
 from typing import *
 
 import discord
@@ -46,7 +47,6 @@ class BasicBot(commands.Bot):
 
     def log(self, content: str, channel: discord.TextChannel = None):
         async def async_log(content: str, channel: discord.TextChannel):
-            print(content)
             content = content.replace("@everyone", "`@everyone`").replace("@here", "`@here`")
             for segment in split_message_for_discord(content):
                 await channel.send(segment)
@@ -64,11 +64,22 @@ class BasicBot(commands.Bot):
         return reaction
 
 
+class LoggingHandler(logging.Handler):
+    def __init__(self, bot: BasicBot):
+        super().__init__()
+        self.bot = bot
+
+    def emit(self, record: logging.LogRecord):
+        formatted_record = self.format(record)
+        if self.bot.is_ready():
+            self.bot.log(formatted_record)
+
+
 if __name__ == "__main__":
     bot = BasicBot()
     logging.basicConfig(
         level=logging.INFO,
-        handlers=(smileydealer.LoggingHandler(bot), logging.FileHandler(LOG_FILENAME)),
+        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME)),
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}", style="{")
     bot.add_cog(smileydealer.FreeSmileyDealerCog(bot))

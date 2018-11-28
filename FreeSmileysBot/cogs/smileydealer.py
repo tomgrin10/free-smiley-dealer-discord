@@ -32,7 +32,7 @@ with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
 
 
 # List all emojis in message
-def emoji_lis(s: str) -> Iterable[str]:
+def emoji_list(s: str) -> Iterable[str]:
     for c in s:
         if c in DISCORD_EMOJI_TO_CODE:
             yield c
@@ -56,9 +56,14 @@ class FreeSmileyDealerCog:
         """
         def __init__(self, static_data):
             self._static_data = static_data
-            self._client = pymongo.MongoClient()
+
+            self._client = pymongo.MongoClient(serverSelectionTimeoutMS=3)
+            self._client.server_info()
             self._db = self._client["smiley_dealer"]
             self.data_fixer_upper()
+
+        def get_default_setting(self, setting_name: str):
+            return self._static_data["default_settings"][setting_name]
 
         def get_setting(self, setting_name: str, guild_id: int, channel_id: int):
             """
@@ -94,7 +99,21 @@ class FreeSmileyDealerCog:
                 return setting_value
 
             # There wasn't a setting so return global default
-            return self._static_data["default_settings"][setting_name]
+            return self.get_default_setting(setting_name)
+
+        def change_setting_to_default(self, setting_name: str, guild_id: int, channel_id: int = "default"):
+            self._db["guilds"].update_one(
+                {"_id": str(guild_id)},
+                {"$unset":
+                    {f"settings.{str(channel_id)}.{setting_name}": ""}})
+
+        def change_setting(self, setting_name: str, setting_value, guild_id: int, channel_id: int = "default"):
+            # Change the value of the setting
+            self._db["guilds"].update_one(
+                {"_id": str(guild_id)},
+                {"$set":
+                    {f"settings.{str(channel_id)}.{setting_name}": setting_value}},
+                upsert=True)
 
         def data_fixer_upper(self):
             path = pathlib.Path("dynamic_data.json")
@@ -213,7 +232,7 @@ class FreeSmileyDealerCog:
                 return
 
             # Iterate every emoji in the message and try to get the free smiley
-            for emoji in emoji_lis(message.content):
+            for emoji in emoji_list(message.content):
                 url = self.get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message, allow_surprise=True)
                 if url is not None:
                     print(message.content + " detected.")
@@ -228,6 +247,10 @@ class FreeSmileyDealerCog:
         except Exception as e:
             message.channel.send(":x: **An error occurred.**")
             logging.exception("")
+
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, commands.MissingPermissions):
+            await ctx.send(error)
 
     @commands.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context):
@@ -266,30 +289,30 @@ Come to my support guild for help or suggestions!""")
             await ctx.send(":x: **Smiley not found.**")
 
     @commands.command(name="size", aliases=["height"])
-    async def command_size(self, ctx: commands.Context, size: str):
-        # Check for permissions
-        if not ctx.author.guild_permissions.manage_channels:
-            await ctx.send(":x: **This command requires you to have `Manage Channels` permission to use it.**")
+    @commands.has_permissions(manage_channels=True)
+    async def command_size(self, ctx: commands.Context, size_str: str):
+        keywords_default = ("def", "default")
+
+        # If default
+        if size_str in keywords_default:
+            self.db.change_setting_to_default("smiley_size", ctx.guild.id)
+            await ctx.send(f":white_check_mark: Server smiley size returned to default `{self.db.get_default_setting('smiley_size')}`.")
             return
 
         # Validate size parameter
         try:
-            size = int(size)
+            size_int = int(size_str)
         except ValueError:
             await ctx.send(":x: **Invalid size.**")
             return
 
-        if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
+        if size_int < MIN_SMILEY_SIZE or size_int > MAX_SMILEY_SIZE:
             await ctx.send(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
             return
 
-        confirmation_msg = ctx.send("Are you sure")
-
         # Update database
-        result = self.db._db["guilds"].update_one({"_id": str(ctx.guild.id)}, {"$set": {"settings.default.smiley_size": size}}, upsert=True)
-
-        logging.info(f"Size changed to {size} in {ctx.message.guild}.")
-        await ctx.send(f":white_check_mark: Size changed to {size}.")
+        self.db.change_setting("smiley_size", size_int, ctx.guild.id)
+        await ctx.send(f":white_check_mark: Server smiley size changed to `{size_int}`.")
 
     @commands.command(name="invite", aliases=["inv"])
     async def command_invite(self, ctx):
@@ -310,7 +333,8 @@ Come to my support guild for help or suggestions!""")
         await ctx.send(f"{days}d {hours}h {mins}m {secs}s")
 
     @commands.command(name="log")
-    async def command_log(self, ctx, *, to_log):
+    @commands.is_owner()
+    async def command_log(self, ctx: commands.Context, *, to_log):
         shortcuts = {
             "len": "len(self.bot.guilds)",
             "names": "[g.name for g in sorted(self.bot.guilds, key=lambda g: g.member_count, reverse=True)]",
@@ -319,8 +343,7 @@ Come to my support guild for help or suggestions!""")
         if to_log in shortcuts:
             to_log = shortcuts[to_log]
 
-        if ctx.author.id == 190224152978915329:
-            logging.info(f"{eval(to_log)}")
+        logging.info(f"{ctx.message.content}:\n{eval(to_log)}")
 
     # Reload data every once in a while
     async def reload_data_continuously(self):
@@ -338,12 +361,3 @@ Come to my support guild for help or suggestions!""")
             finally:
                 await sleep_task
 
-
-class LoggingHandler(logging.Handler):
-    def __init__(self, bot: BasicBot):
-        super().__init__()
-        self.bot = bot
-
-    def emit(self, record: logging.LogRecord):
-        if self.bot.is_ready():
-            self.bot.log(self.format(record))
