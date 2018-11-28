@@ -250,7 +250,8 @@ class FreeSmileyDealerCog:
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
         if isinstance(error, commands.MissingPermissions):
-            await ctx.send(error)
+            perm = commands.MissingPermissions(error).missing_perms[0].replace('_', ' ').replace('guild', 'server').title()
+            await ctx.send(f":x: **This command requires you to have `{perm}` permission to use it.**")
 
     @commands.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context):
