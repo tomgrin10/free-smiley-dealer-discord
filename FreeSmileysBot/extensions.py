@@ -1,14 +1,10 @@
 import asyncio
 import json
 import logging
-import sys
 from typing import *
 
 import discord
 from discord.ext import commands
-
-import cogs.smileydealer as smileydealer
-from cogs.dblapi import DiscordBotsOrgAPI
 
 # Constants
 CONFIG_FILENAME = "config.json"
@@ -55,7 +51,7 @@ class BasicBot(commands.Bot):
         asyncio.create_task(async_log(content, channel))
 
     async def ask_question(self, message: discord.Message, user: discord.User, reactions=('✅', '❌'), timeout: int = 60) -> discord.Reaction:
-        check = lambda r, u: u == user and str(r.emoji) in [str(r.emoji) for r in reactions]
+        check = lambda r, u: u == user and str(r.emoji) in reactions
 
         for r in reactions:
             await message.add_reaction(r)
@@ -75,16 +71,28 @@ class LoggingHandler(logging.Handler):
             self.bot.log(formatted_record)
 
 
-if __name__ == "__main__":
-    bot = BasicBot()
-    logging.basicConfig(
-        level=logging.INFO,
-        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME)),
-        datefmt="%d-%m-%Y %H:%M:%S",
-        format="**{levelname}:** *{asctime}*\n{message}", style="{")
-    try:
-        bot.add_cog(smileydealer.FreeSmileyDealerCog(bot))
-        bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
-        bot.run()
-    except Exception:
-        logging.exception("")
+T = TypeVar('T')
+
+
+class Unordered(commands.Converter, Generic[T]):
+    def convert(self, ctx: commands.Context, argument) -> T:
+        for arg in ctx.args:
+            try:
+                return T(arg)
+            except BadSimilarArgument as e:
+                raise e
+        raise UnorderedArgumentNotFound()
+
+
+class UnorderedArgumentNotFound(commands.UserInputError):
+    """
+    Exception raised when an unordered argument is not found.
+    """
+    pass
+
+
+class BadSimilarArgument(commands.BadArgument):
+    """
+    Exception raised when wrong argument seems like it might be a mistake.
+    """
+    pass

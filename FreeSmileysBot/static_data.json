@@ -17,8 +17,9 @@
     "base_url": "https://lusaustr.sirv.com/smileys",
     
     "default_settings": {
-        "smiley_size": 120,
-        "lite_mode": false
+        "smiley_size": 110,
+        "lite_mode": false,
+        "muted_users": []
     },
     
     "smileys": [

@@ -1,5 +1,4 @@
 import asyncio
-from bson import ObjectId
 import datetime
 import json
 import logging
@@ -7,7 +6,6 @@ import pathlib
 import random
 import time
 import urllib.parse
-from contextlib import asynccontextmanager
 from typing import *
 
 import discord
@@ -16,7 +14,8 @@ import pymongo
 import requests
 from discord.ext import commands
 
-from bot import BasicBot
+import extensions
+from extensions import BasicBot
 
 # Constants
 STATIC_DATA_FILENAME = "static_data.json"
@@ -49,6 +48,21 @@ def spookify_image_url(url: str, spook_value: int) -> str:
     return furl.furl(url).add({k: round(v * spook_value) for k, v in max_values.items()})
 
 
+def to_size(arg: str) -> Optional[int]:
+    if "default".startswith(arg):
+        return None
+
+    try:
+        size = int(arg)
+    except ValueError:
+        raise commands.BadArgument(":x: **Size needs to be a number.**")
+
+    if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
+        raise extensions.BadSimilarArgument(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
+
+    return size
+
+
 class FreeSmileyDealerCog:
     class Database:
         """
@@ -65,29 +79,32 @@ class FreeSmileyDealerCog:
         def get_default_setting(self, setting_name: str):
             return self._static_data["default_settings"][setting_name]
 
-        def get_setting(self, setting_name: str, guild_id: int, channel_id: int):
+        def get_setting(self, setting_name: str, guild_id: Optional[int] = None, channel_id: Optional[int] = None):
             """
             Gets channel-specific/guild-specific or global default setting by name
             :param setting_name: Name of the setting
             :return: The setting value
             """
             def get_setting_from_database():
+                if not guild_id:
+                    return
+
                 guild_doc = self._db["guilds"].find_one({"_id": str(guild_id)})
-                print(guild_id)
 
                 # If guild has no document at all
                 if not guild_doc:
                     return None
 
-                # Try to get channel-specific setting
-                try:
-                    return guild_doc["settings"][str(channel_id)][setting_name]
-                except KeyError:
-                    pass
+                # Try to get channel setting
+                if channel_id:
+                    try:
+                        return guild_doc["settings"][str(channel_id)][setting_name]
+                    except KeyError:
+                        pass
 
-                # Try to get guild-specific setting
+                # Try to get default server setting
                 try:
-                    return guild_doc["settings"]["default"][setting_name]
+                    return guild_doc["settings"]['default'][setting_name]
                 except KeyError:
                     pass
 
@@ -101,18 +118,22 @@ class FreeSmileyDealerCog:
             # There wasn't a setting so return global default
             return self.get_default_setting(setting_name)
 
-        def change_setting_to_default(self, setting_name: str, guild_id: int, channel_id: int = "default"):
+        def change_setting_to_default(self, setting_name: str, guild_id: int, channel_id: Optional[int] = None):
             self._db["guilds"].update_one(
                 {"_id": str(guild_id)},
                 {"$unset":
-                    {f"settings.{str(channel_id)}.{setting_name}": ""}})
+                    {f"settings.{str(channel_id) if channel_id else 'default'}.{setting_name}": ""}})
 
-        def change_setting(self, setting_name: str, setting_value, guild_id: int, channel_id: int = "default"):
+        def change_setting(self, setting_name: str, guild_id: int, setting_value: Any = None, channel_id: Optional[int] = None):
+            if setting_value is None:
+                self.change_setting_to_default(setting_name, guild_id, channel_id)
+                return
+
             # Change the value of the setting
             self._db["guilds"].update_one(
                 {"_id": str(guild_id)},
                 {"$set":
-                    {f"settings.{str(channel_id)}.{setting_name}": setting_value}},
+                    {f"settings.{str(channel_id) if channel_id else 'default'}.{setting_name}": setting_value}},
                 upsert=True)
 
         def data_fixer_upper(self):
@@ -140,7 +161,8 @@ class FreeSmileyDealerCog:
         self.bot.loop.create_task(self.reload_data_continuously())
 
     def get_free_smiley_url(self, emoji_name: str, message: discord.Message, smiley_num: str = None,
-                            allow_surprise=False) -> Union[str, None]:
+                            allow_surprise=False) -> Optional[str]:
+
         """
         Returns an image url of the matching smiley with given parameters
         :param emoji_name: Name of the emoji to convert from.
@@ -176,7 +198,6 @@ class FreeSmileyDealerCog:
                     return
             else:
                 # Get smiley from smiley number
-                print(dir_json["files"])
                 matches = list(filter(lambda file: smiley_num in file["name"], dir_json["files"]))
                 if len(matches) == 0:
                     return
@@ -215,7 +236,7 @@ class FreeSmileyDealerCog:
         logging.exception("")
 
     async def on_ready(self):
-        await self.bot.change_presence(game=discord.Game(name=self.static_data["game"]))
+        await self.bot.change_presence(activity=discord.Game(self.static_data["game"]))
         logging.info("Bot is ready.")
         logging.info(f"{len(self.bot.guilds)} guilds:\n{[g.name for g in sorted(self.bot.guilds, key=lambda g: g.member_count, reverse=True)]}")
 
@@ -235,8 +256,6 @@ class FreeSmileyDealerCog:
             for emoji in emoji_list(message.content):
                 url = self.get_free_smiley_url(DISCORD_EMOJI_TO_CODE[emoji].replace(':', ''), message, allow_surprise=True)
                 if url is not None:
-                    print(message.content + " detected.")
-
                     # Create the embed
                     embed = discord.Embed(title=random.choice(self.static_data["titles"]))
                     embed.set_image(url=url)
@@ -249,6 +268,12 @@ class FreeSmileyDealerCog:
             logging.exception("")
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
+        to_send = (commands.BadArgument,)
+        for err_type in to_send:
+            if isinstance(error, err_type):
+                await ctx.send(error)
+                return
+
         if isinstance(error, commands.MissingPermissions):
             perm = error.missing_perms[0].replace('_', ' ').replace('guild', 'server').title()
             await ctx.send(f":x: **This command requires you to have `{perm}` permission to use it.**")
@@ -281,39 +306,38 @@ Come to my support guild for help or suggestions!""")
         await ctx.author.send(content, embed=embed)
 
     @commands.command(name="smiley", aliases=["s"])
-    async def command_smiley(self, ctx: commands.Context, emoji_name: str, smiley_num: str = None):
+    async def command_smiley(self, ctx: commands.Context, emoji_name: str, smiley_num: Optional[str] = None):
         url = self.get_free_smiley_url(emoji_name.replace(':', ''), ctx.message, smiley_num=smiley_num)
         if url is not None:
-            print(ctx.message.content + " detected.")
             await ctx.send(url)
         else:
             await ctx.send(":x: **Smiley not found.**")
 
     @commands.command(name="size", aliases=["height"])
     @commands.has_permissions(manage_channels=True)
-    async def command_size(self, ctx: commands.Context, size_str: str):
-        keywords_default = ("def", "default")
+    async def command_size(self, ctx: commands.Context, size: to_size):
+        server_emoji = "🇸"
+        channel_emoji = "🇨"
 
-        # If default
-        if size_str in keywords_default:
-            self.db.change_setting_to_default("smiley_size", ctx.guild.id)
-            await ctx.send(f":white_check_mark: Server smiley size returned to default `{self.db.get_default_setting('smiley_size')}`.")
-            return
-
-        # Validate size parameter
+        # Ask user if he wants change to server or channel
+        question_msg: discord.Message = await ctx.send(f"Do you want to change the {channel_emoji}hannel smiley size or the {server_emoji}erver default?")
         try:
-            size_int = int(size_str)
-        except ValueError:
-            await ctx.send(":x: **Invalid size.**")
+            answer_emoji = str((await self.bot.ask_question(question_msg, ctx.author, reactions=(channel_emoji, server_emoji), timeout=20)).emoji)
+        except asyncio.TimeoutError:
+            await question_msg.delete()
+            await ctx.send(":x: **Operation cancelled.**")
             return
-
-        if size_int < MIN_SMILEY_SIZE or size_int > MAX_SMILEY_SIZE:
-            await ctx.send(f":x: **Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.**")
-            return
+        await question_msg.delete()
+        channel_id = ctx.channel.id if answer_emoji == channel_emoji else None
 
         # Update database
-        self.db.change_setting("smiley_size", size_int, ctx.guild.id)
-        await ctx.send(f":white_check_mark: Server smiley size changed to `{size_int}`.")
+        self.db.change_setting("smiley_size", ctx.guild.id, size, channel_id)
+
+        # Send confirmation
+        await ctx.send(f":white_check_mark: {'Channel' if channel_id else 'Server default'} smiley size " +
+                       (f"changed to `{size}`." if size else f"returned to " +
+                        (f"server default `{self.db.get_setting('smiley_size', ctx.guild.id)}`." if channel_id else
+                         f"global default `{self.db.get_default_setting('smiley_size')}`.")))
 
     @commands.command(name="invite", aliases=["inv"])
     async def command_invite(self, ctx):
@@ -336,6 +360,7 @@ Come to my support guild for help or suggestions!""")
     @commands.command(name="log")
     @commands.is_owner()
     async def command_log(self, ctx: commands.Context, *, to_log):
+
         shortcuts = {
             "len": "len(self.bot.guilds)",
             "names": "[g.name for g in sorted(self.bot.guilds, key=lambda g: g.member_count, reverse=True)]",
