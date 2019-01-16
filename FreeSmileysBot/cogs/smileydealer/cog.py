@@ -571,7 +571,7 @@ class FreeSmileyDealerCog:
             .push(target_user.id)
 
         target_channel_str = 'server wide' if not target_channel else \
-            'in' + ('this channel' if target_channel == ctx.channel else target_channel.mention)
+            'in ' + ('this channel' if target_channel == ctx.channel else target_channel.mention)
         await ctx.send(f":mute: {target_user.mention} has been muted {target_channel_str}.")
 
     @extensions.command(name="unmute", category="settings",
