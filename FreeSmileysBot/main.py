@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(
         level=logging.INFO,
-        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME)),
+        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME,)),
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}", style="{")
 
@@ -17,5 +17,5 @@ if __name__ == "__main__":
         bot.add_cog(FreeSmileyDealerCog(bot))
         bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
         bot.run()
-    except Exception:
-        logging.exception("")
+    except Exception as e:
+        logging.exception(e)

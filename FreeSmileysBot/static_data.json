@@ -1,5 +1,4 @@
 {
-    "game": "with free smileys | s!help",
     "titles": [
         "Only free smileys here.",
         "No paid smileys in my server.",
@@ -17,9 +16,11 @@
     "base_url": "https://lusaustr.sirv.com/smileys",
     
     "default_settings": {
+        "enabled": true,
         "smiley_size": 110,
         "lite_mode": false,
-        "muted_users": []
+        "muted_users": [],
+        "cooldown": [3, 6]
     },
     
     "smileys": [
@@ -38,7 +39,11 @@
         ["spy", "bust_in_silhouette", "busts_in_silhouette", "secret"],
         ["innocent"],
         ["hug", "hugging"],
-        ["heart"],
+        ["heart", "heart_exclamation", "two_hearts", "revolving_hearts", "heartbeat", "heartpulse", "sparkling_heart", "cupid", "gift_heart", "heart_decoration", "hearts"],
+        ["yellow_heart"],
+        ["green_heart"],
+        ["purple_heart"],
+        ["blue_heart"],
         ["pig", "pig2", "pig_nose"],
         ["lemon"],
         ["soccer"],
@@ -63,7 +68,7 @@
         ["unamused"],
         ["frowning", "frowning2", "slight_frown", "fearful", "anguished", "worried", "disappointed"],
         ["pensive", "confused", "expressionless"],
-        ["neutral_face"],
+        ["neutral_face", "zipper_mouth"],
         ["no_mouth"],
         ["smirk", "smirk_cat"],
         ["exclamation", "grey_exclamation", "attention"],
