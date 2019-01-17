@@ -81,25 +81,8 @@ class BasicBot(commands.Bot):
     async def setup_activities(self):
         await self.wait_until_ready()
 
-        def make_activity(activity_str: str) -> discord.Activity:
-            # If is string
-            first_word = activity_str.split(' ')[0]
-            try:
-                act_type = getattr(discord.ActivityType, first_word.lower())
-            except AttributeError:
-                raise discord.ClientException(f"Activity `{activity_str}` error.")
-
-            act_name = activity_str.replace(f"{first_word} ", "")
-
-            return discord.Activity(
-                type=act_type,
-                name=act_name.format(guilds_count=len(self.guilds), prefix=self.config["prefix"]))
-
         if "activities" in self.config:
-            self.config_objects["activities"] = []
-            for activity in self.config["activities"]:
-                self.config_objects["activities"].append(make_activity(activity))
-                self.loop.create_task(self.continuously_change_presence())
+            self.loop.create_task(self.continuously_change_presence())
 
     def run(self):
         super().run(self.config["token"])
@@ -137,9 +120,24 @@ class BasicBot(commands.Bot):
 
     async def continuously_change_presence(self):
         await self.wait_until_ready()
+
+        def make_activity(activity_str: str) -> discord.Activity:
+            # If is string
+            first_word = activity_str.split(' ')[0]
+            try:
+                act_type = getattr(discord.ActivityType, first_word.lower())
+            except AttributeError:
+                raise discord.ClientException(f"Activity `{activity_str}` error.")
+
+            act_name = activity_str.replace(f"{first_word} ", "")
+
+            return discord.Activity(
+                type=act_type,
+                name=act_name.format(guilds_count=len(self.guilds), prefix=self.config["prefix"]))
+
         while True:
-            for activity in self.config_objects["activities"]:
-                await self.change_presence(activity=activity)
+            for activity_str in self.config["activities"]:
+                await self.change_presence(activity=make_activity(activity_str))
                 await asyncio.sleep(60)
 
     class Commands:

@@ -229,7 +229,7 @@ class FreeSmileyDealerCog:
             logging.exception(error)
             await ctx.send(format("An error has occurred."))
 
-    def get_smiley_name(self, emoji_name: str):
+    def get_smiley_name(self, emoji_name: str) -> Optional[str]:
         # Iterate emojis in data
         for emoji_names in self.static_data["smileys"]:
             if emoji_name in emoji_names:
