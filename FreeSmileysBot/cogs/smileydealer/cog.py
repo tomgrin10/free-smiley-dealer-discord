@@ -203,8 +203,8 @@ class FreeSmileyDealerCog:
             self.smiley_emojis[smiley_name] = sorted(emojis, key=lambda e: e.name.split('_')[-1])
 
     async def on_ready(self):
-        if not __debug__:
-            await self.update_smiley_emojis()
+        #if not __debug__:
+        #    await self.update_smiley_emojis()
         self.setup_smiley_emojis_dict()
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -430,7 +430,7 @@ class FreeSmileyDealerCog:
             description="** You can add `s|server` `c|channel` `#some_channel` to the end of the command to specify where to change setting.\n"
                         "Example: s!lite on channel",
             colour=0x7bb3b5,
-            command_names=("size", "litemode", "blacklist", "mute")))
+            command_names=("litemode", "blacklist", "mute")))
 
         await ctx.author.send(":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
                               f"**Join my server!** {self.bot.config['support_guild_url']}\n"
@@ -466,6 +466,8 @@ class FreeSmileyDealerCog:
                     emoji = await self.bot.ask_question(question_msg, ctx.author, self.smiley_emojis[smiley_name], timeout=30)
                 except asyncio.TimeoutError:
                     raise commands.BadArgument("Operation cancelled.")
+                finally:
+                    await question_msg.delete()
                 smiley_num = int(emoji.name.split('_')[-1])
 
         url = self.get_smiley_url(smiley_name, smiley_num=smiley_num)
@@ -488,7 +490,7 @@ class FreeSmileyDealerCog:
             .change(size)
 
         # Send confirmation
-        target_str = 'server default' if not target_channel else ('channel' if target_channel == ctx.channel else target_channel.mention)
+        target_str = 'server default' if not target_channel else target_channel.mention
         await ctx.send(f":white_check_mark: {target_str.capitalize()} smiley size " +
                        (f"changed to `{size}`." if size else f"returned to " +
                         (f"server default `{self.db.Setting('smiley_size', ctx.guild.id).read()}`." if target_channel else
@@ -515,7 +517,7 @@ class FreeSmileyDealerCog:
             .change(mode)
 
         # Send confirmation
-        target_str = 'server default' if not target_channel else ('channel' if target_channel == ctx.channel else target_channel.mention)
+        target_str = 'server default' if not target_channel else target_channel.mention
         await ctx.send(f":white_check_mark: {target_str.capitalize()} lite mode " +
                        (f"turned `{on_off(mode)}`." if mode is not None else f"returned to " +
                         (f"server default `{on_off(self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
@@ -535,7 +537,7 @@ class FreeSmileyDealerCog:
         self.db.Setting("enabled", guild_id=ctx.guild.id, channel_id=target_channel.id if target_channel else None)\
             .change(False)
 
-        target_str = 'channel' if target_channel == ctx.channel else target_channel.mention
+        target_str = target_channel.mention
         await ctx.send(f":mute: {target_str.capitalize()} has been blacklisted.")
 
     @extensions.command(name="whitelist", aliases=["wl", "unblacklist"], category="settings",
@@ -552,7 +554,7 @@ class FreeSmileyDealerCog:
         self.db.Setting("enabled", guild_id=ctx.guild.id, channel_id=target_channel.id if target_channel else None) \
             .change(None)
 
-        target_str = 'channel' if target_channel == ctx.channel else target_channel.mention
+        target_str = target_channel.mention
         await ctx.send(f":speaker: {target_str.capitalize()} has been un-blacklisted.")
 
     @extensions.command(name="mute", category="settings", opposite="unmute",
@@ -570,8 +572,7 @@ class FreeSmileyDealerCog:
         self.db.Setting("muted_users", guild_id=ctx.guild.id, channel_id=target_channel.id if target_channel else None) \
             .push(target_user.id)
 
-        target_channel_str = 'server wide' if not target_channel else \
-            'in ' + ('this channel' if target_channel == ctx.channel else target_channel.mention)
+        target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
         await ctx.send(f":mute: {target_user.mention} has been muted {target_channel_str}.")
 
     @extensions.command(name="unmute", category="settings",
@@ -589,15 +590,11 @@ class FreeSmileyDealerCog:
         self.db.Setting("muted_users", guild_id=ctx.guild.id, channel_id=target_channel.id if target_channel else None) \
             .pop(target_user.id)
 
-        target_channel_str = 'server wide' if not target_channel else \
-            'in ' + ('this channel' if target_channel == ctx.channel else target_channel.mention)
+        target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
         await ctx.send(f":speaker: {target_user.mention} has been unmuted {target_channel_str}.")
-
-    
 
     # Reload data every once in a while
     async def reload_data_continuously(self):
-        global DISCORD_CODE_TO_EMOJI, DISCORD_EMOJI_TO_CODE
         await self.bot.wait_until_ready()
         while True:
             sleep_task = asyncio.create_task(asyncio.sleep(60))
