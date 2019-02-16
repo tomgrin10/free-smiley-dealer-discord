@@ -317,10 +317,8 @@ class FreeSmileyDealerCog:
                 new_ctx.command = command
                 await self.bot.invoke(new_ctx)
 
-    @extensions.command(name="_on_message", hidden=True,
-                        func_cooldown=(get_cooldown, (commands.BucketType.channel, commands.BucketType.user)))
+    @extensions.command(name="_on_message", hidden=True)
     @commands.guild_only()
-    @commands.bot_has_permissions(send_messages=True)
     @is_enabled()
     @author_not_muted()
     async def command__on_message(self, ctx: commands.Context, emoji: str):
@@ -422,7 +420,7 @@ class FreeSmileyDealerCog:
         await ctx.author.send(embed=create_commands_embed(
             title=":information_source: Commands",
             colour=0xf3f702,
-            command_names=("smiley", "invite", "server", "donate")))
+            command_names=("invite", "server", "donate")))
 
         # Settings embed
         await ctx.author.send(embed=create_commands_embed(
@@ -437,10 +435,10 @@ class FreeSmileyDealerCog:
                               f"**Donate to keep the bot alive!** {self.bot.config['donate_url']}")
 
     @extensions.command(name="smiley", aliases=["s"], category="commands",
-                        func_cooldown=(get_cooldown, (commands.BucketType.channel, commands.BucketType.user)),
                         brief="Sends the full-size version of the smiley.",
                         usage="[emoji]",
-                        examples=[":grin:", "<:grin_1:520062574205730827>"])
+                        examples=[":grin:", "<:grin_1:520062574205730827>"],
+                        enabled=False)
     @commands.guild_only()
     @commands.bot_has_permissions(send_messages=True)
     async def command_smiley(self, ctx: commands.Context, emoji_name: Union[to_emoji_name, discord.Emoji, str]):

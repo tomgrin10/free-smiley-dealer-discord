@@ -161,7 +161,7 @@ class BasicBot(commands.Bot):
                 pass
 
         @command(name="donate", aliases=["support"], category="commands",
-                 brief="Get a donation link to help me out maintaining this bot.")
+                 brief="Get a donation link to help me maintain this bot.")
         async def command_donate(self, ctx):
             try:
                 await ctx.send(self.bot.config["donate_url"])
