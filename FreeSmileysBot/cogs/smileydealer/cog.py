@@ -474,7 +474,8 @@ class FreeSmileyDealerCog:
 
     @extensions.command(name="size", category="settings",
                         brief="Change the size of the smiley image when correcting.",
-                        usage="[pixels|*default*] [**]")
+                        usage="[pixels|*default*] [**]",
+                        enable=False)
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     async def command_size(self, ctx: commands.Context,
