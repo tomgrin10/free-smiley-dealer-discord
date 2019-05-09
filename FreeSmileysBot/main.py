@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     logging.basicConfig(
         level=logging.INFO,
-        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout), logging.FileHandler(LOG_FILENAME,)),
+        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout)),
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}", style="{")
 
