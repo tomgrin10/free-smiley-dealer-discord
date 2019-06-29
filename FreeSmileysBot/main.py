@@ -1,3 +1,5 @@
+import logging
+from logging.handlers import RotatingFileHandler
 import sys
 
 from extensions import *
@@ -9,7 +11,10 @@ if __name__ == "__main__":
 
     logging.basicConfig(
         level=logging.INFO,
-        handlers=(LoggingHandler(bot), logging.StreamHandler(sys.stdout)),
+        handlers=(
+            DiscordChannelLoggingHandler(bot),
+            logging.StreamHandler(sys.stdout),
+            RotatingFileHandler("log.txt", maxBytes=100_000, backupCount=1)),
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}", style="{")
 

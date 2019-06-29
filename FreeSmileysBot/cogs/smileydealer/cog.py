@@ -5,18 +5,16 @@ import json
 import logging
 import random
 import time
-import urllib.parse
 from typing import *
 
 import discord
 import furl
-import pymongo
 import requests
 from discord.ext import commands
 
-from .database import Database, is_enabled, author_not_muted
 import extensions
 from extensions import BasicBot
+from .database import Database, is_enabled, author_not_muted
 
 # Constants
 STATIC_DATA_FILENAME = "static_data.json"
@@ -41,11 +39,6 @@ def rand_color_image_url(url: str) -> str:
     return furl.furl(url).add({"hue": random.randint(-100, 100),
                                "saturation": random.randint(-100, 100),
                                "lightness": random.randint(-100, 100)}).url
-
-
-def spookify_image_url(url: str, spook_value: float) -> str:
-    max_values = {"contrast": 36, "shadows": random.choice([100, -65]), "saturation": -100, "lightness": -100}
-    return furl.furl(url).add({k: round(v * spook_value) for k, v in max_values.items()})
 
 
 def halloween_spook_value() -> float:
@@ -89,7 +82,7 @@ def to_size(arg: str) -> int:
         raise commands.BadArgument("Size needs to be a number.")
 
     if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
-        raise extensions.BadSimilarArgument(f"Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.")
+        raise commands.BadArgument(f"Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.")
 
     return size
 
@@ -218,7 +211,7 @@ class FreeSmileyDealerCog:
             await ctx.send(format(f"This command requires you to have `{perm}` permission to use it."))
 
         # User gave bad arguments
-        elif isinstance(error, (commands.BadArgument,)):
+        elif isinstance(error, commands.BadArgument):
             await ctx.send(format(error))
 
         elif isinstance(error, commands.BadUnionArgument):
@@ -227,68 +220,16 @@ class FreeSmileyDealerCog:
         # Error while executing a command
         if isinstance(error, commands.CommandInvokeError) or __debug__:
             logging.exception(error)
-            await ctx.send(format("An error has occurred."))
+            try:
+                await ctx.send(format("An error has occurred."))
+            except discord.Forbidden:
+                pass
 
     def get_smiley_name(self, emoji_name: str) -> Optional[str]:
         # Iterate emojis in data
         for emoji_names in self.static_data["smileys"]:
             if emoji_name in emoji_names:
                 return emoji_names[0]
-
-    def get_smiley_url(self, emoji_name: str, ctx: commands.Context = None, *,
-                       smiley_num: Optional[int] = None, allow_surprise=False) -> Optional[str]:
-        """
-        Returns an image url of the matching smiley with given parameters
-        :param emoji_name: Name of the emoji to convert from.
-        :param ctx: The message object
-        :param smiley_num: Specification of the smiley to get from the folder
-        :param allow_surprise: Allow surprises on the smiley or not
-        :return: The image url
-        """
-        # Get smiley name from emoji name
-        dir_name = self.get_smiley_name(emoji_name)
-        if not dir_name:
-            return
-
-        # Get and format url
-        dir_url = f"{self.static_data['base_url']}/{dir_name}"
-        dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
-
-        if smiley_num is None:
-            # Get random smiley
-            try:
-                file_name = random.choice(dir_json['files'])['name']
-                # If regular smiley
-            except IndexError:
-                return
-        else:
-            # Get smiley from smiley number
-            matches = list(filter(lambda file: str(smiley_num) in file["name"], dir_json["files"]))
-            if len(matches) == 0:
-                return
-            file_name = matches[0]["name"]
-
-        free_smiley_url = f"{dir_url}/{urllib.parse.quote(file_name)}"
-
-        # Attach height parameter to url
-        if ctx:
-            free_smiley_url += f"?h={self.db.Setting('smiley_size', ctx.guild.id, ctx.channel.id).read()}"
-
-        # Random surprises
-        if allow_surprise and not file_name.endswith(".gif"):
-            chance = random.random() * 100
-
-            # Recolor rare smiley surprise
-            if chance < self.static_data["surprise_chance"]:
-                free_smiley_url = rand_color_image_url(free_smiley_url)
-
-            # Halloween spooker
-            elif chance < 50:
-                spook_value = halloween_spook_value()
-                if spook_value > 0:
-                    free_smiley_url = spookify_image_url(free_smiley_url, spook_value)
-
-        return free_smiley_url
 
     def get_smiley_reaction_emoji(self, emoji_name: str) -> Optional[discord.Emoji]:
         # Get smiley name from emoji name
@@ -323,16 +264,6 @@ class FreeSmileyDealerCog:
     @author_not_muted()
     async def command__on_message(self, ctx: commands.Context, emoji: str):
         emoji_name = DISCORD_EMOJI_TO_CODE[emoji].replace(':', '')
-
-        async def send_smiley_image():
-            # Iterate every emoji in the message and try to get the free smiley
-            url = self.get_smiley_url(emoji_name, ctx, allow_surprise=True)
-            if url is not None:
-                # Create the embed
-                embed = discord.Embed(title=random.choice(self.static_data["titles"]))
-                embed.set_image(url=url)
-
-                await ctx.send(content=f"{ctx.author.mention}", embed=embed)
 
         async def send_smiley_emoji():
             emoji = self.get_smiley_reaction_emoji(emoji_name)
@@ -433,67 +364,6 @@ class FreeSmileyDealerCog:
         await ctx.author.send(":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
                               f"**Join my server!** {self.bot.config['support_guild_url']}\n"
                               f"**Donate to keep the bot alive!** {self.bot.config['donate_url']}")
-
-    @extensions.command(name="smiley", aliases=["s"], category="commands",
-                        brief="Sends the full-size version of the smiley.",
-                        usage="[emoji]",
-                        examples=[":grin:", "<:grin_1:520062574205730827>"],
-                        enabled=False)
-    @commands.guild_only()
-    @commands.bot_has_permissions(send_messages=True)
-    async def command_smiley(self, ctx: commands.Context, emoji_name: Union[to_emoji_name, discord.Emoji, str]):
-        # Check if argument is an Emoji
-        if isinstance(emoji_name, discord.Emoji):
-            # Check if argument is official smiley emoji
-            if emoji_name in {x for v in self.smiley_emojis.values() for x in v}:
-                smiley_num = emoji_name.name.split('_')[-1]
-                smiley_name = emoji_name.name.replace(f"_{smiley_num}", '')
-            else:
-                raise commands.BadArgument("Smiley not found.")
-        else:
-            smiley_name = self.get_smiley_name(emoji_name)
-            if not smiley_name:
-                raise commands.BadArgument("Smiley not found.")
-
-            if len(self.smiley_emojis[smiley_name]) == 1:
-                smiley_num = 1
-            # Ask what smiley to send
-            else:
-                question_msg = await ctx.send("Choose smiley.")
-                try:
-                    emoji = await self.bot.ask_question(question_msg, ctx.author, self.smiley_emojis[smiley_name], timeout=30)
-                except asyncio.TimeoutError:
-                    raise commands.BadArgument("Operation cancelled.")
-                finally:
-                    await question_msg.delete()
-                smiley_num = int(emoji.name.split('_')[-1])
-
-        url = self.get_smiley_url(smiley_name, smiley_num=smiley_num)
-        if url is not None:
-            await ctx.send(url)
-
-    @extensions.command(name="size", category="settings",
-                        brief="Change the size of the smiley image when correcting.",
-                        usage="[pixels|*default*] [**]",
-                        enabled=False)
-    @commands.guild_only()
-    @commands.has_permissions(manage_channels=True)
-    async def command_size(self, ctx: commands.Context,
-                           size: Union[SettingsDefaultConverter, to_size], target_channel: SettingsChannelConverter = "ask"):
-        if target_channel == "ask":
-            # Ask user if he wants change to server or channel
-            target_channel = await settings_ask_channel_or_server(ctx, "Do you want to change the channel smiley size or the server default?")
-
-        # Update database
-        self.db.Setting("smiley_size", guild_id=ctx.guild.id, channel_id=target_channel.id if target_channel else None)\
-            .change(size)
-
-        # Send confirmation
-        target_str = 'server default' if not target_channel else target_channel.mention
-        await ctx.send(f":white_check_mark: {target_str.capitalize()} smiley size " +
-                       (f"changed to `{size}`." if size else f"returned to " +
-                        (f"server default `{self.db.Setting('smiley_size', ctx.guild.id).read()}`." if target_channel else
-                         f"global default `{self.db.get_global_default_setting('smiley_size')}`.")))
 
     @extensions.command(name="litemode", aliases=["lite"], category="settings",
                         brief="Litemode is a less spammy way to correct people.\nInstead of sending an image I will react with the smiley.",

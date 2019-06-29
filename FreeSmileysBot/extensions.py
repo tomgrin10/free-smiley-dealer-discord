@@ -5,7 +5,6 @@ import time
 import datetime
 from typing import *
 
-import attr
 import discord
 from discord.ext import commands
 
@@ -16,6 +15,8 @@ MESSAGE_CHARACTER_LIMIT = 2000
 MAX_EMOJIS = 50
 EMOJI_PIXEL_SIZE = 128
 T0 = time.time()
+
+__all__ = ['Command', 'command', 'BasicBot', 'DiscordChannelLoggingHandler', 'CommandConverter']
 
 
 def split_message_for_discord(content: str, divider: str = None) -> Iterable[str]:
@@ -191,7 +192,7 @@ class BasicBot(commands.Bot):
             logging.info(f"`{ctx.message.content}`\n{eval(to_log)}")
 
 
-class LoggingHandler(logging.Handler):
+class DiscordChannelLoggingHandler(logging.Handler):
     def __init__(self, bot: BasicBot, min_level=logging.INFO):
         super().__init__()
         self.bot = bot
@@ -265,30 +266,3 @@ class CooldownMapping(commands.CooldownMapping):
             bucket = self._cache[key]
 
         return bucket
-
-
-T = TypeVar('T')
-
-
-class Unordered(commands.Converter, Generic[T]):
-    def convert(self, ctx: commands.Context, argument) -> T:
-        for arg in ctx.args:
-            try:
-                return T(arg)
-            except BadSimilarArgument as e:
-                raise e
-        raise UnorderedArgumentNotFound()
-
-
-class UnorderedArgumentNotFound(commands.UserInputError):
-    """
-    Exception raised when an unordered argument is not found.
-    """
-    pass
-
-
-class BadSimilarArgument(commands.BadArgument):
-    """
-    Exception raised when wrong argument seems like it might be a mistake.
-    """
-    pass
