@@ -372,6 +372,7 @@ class FreeSmileyDealerCog:
     @commands.command(name="update")
     @commands.check(check_if_bot_admin)
     async def command_update(self):
+        self.bot.setup_config_objects()
         await self.setup_smiley_emojis_dict()
 
     # Reload data every once in a while
