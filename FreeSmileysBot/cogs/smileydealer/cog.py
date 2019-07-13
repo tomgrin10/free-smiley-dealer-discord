@@ -141,7 +141,7 @@ class FreeSmileyDealerCog:
     def get_smiley_reaction_emoji(self, emoji_name: str) -> Optional[discord.Emoji]:
         # Get smiley name from emoji name
         smiley_name = self.get_smiley_name(emoji_name)
-        if not smiley_name:
+        if not smiley_name or smiley_name not in self.smiley_emojis_dict:
             return
 
         return random.choice(self.smiley_emojis_dict[smiley_name])
