@@ -373,11 +373,13 @@ class FreeSmileyDealerCog:
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
         await ctx.send(f":speaker: {target_user.mention} has been unmuted {target_channel_str}.")
 
-    @commands.command(name="update")
+    @commands.command(name="update", aliases=["u"])
     @commands.check(check_if_bot_admin)
-    async def command_update(self):
+    async def command_update(self, ctx: commands.Context):
+        await ctx.send("Updating...")
         self.bot.setup_config_objects()
-        await self.setup_smiley_emojis_dict()
+        self.setup_smiley_emojis_dict()
+        await ctx.send("Finished updating.")
 
     # Reload data every once in a while
     async def reload_data_continuously(self):
