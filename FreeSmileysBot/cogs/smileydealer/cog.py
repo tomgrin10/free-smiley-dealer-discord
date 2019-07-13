@@ -8,11 +8,11 @@ import time
 from typing import *
 
 import discord
-import furl
 import requests
 from discord.ext import commands
 
 import extensions
+from .converters import SettingsDefaultConverter, SettingsChannelConverter
 from extensions import BasicBot
 from .database import Database, is_enabled, author_not_muted
 
@@ -28,33 +28,13 @@ with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
     DISCORD_EMOJI_TO_CODE = {v: k for k, v in DISCORD_CODE_TO_EMOJI.items()}
 
 
-# List all emojis in message
-def emoji_list(s: str) -> Iterator[str]:
-    for c in s:
-        if c in DISCORD_EMOJI_TO_CODE:
-            yield c
-
-
-def rand_color_image_url(url: str) -> str:
-    return furl.furl(url).add({"hue": random.randint(-100, 100),
-                               "saturation": random.randint(-100, 100),
-                               "lightness": random.randint(-100, 100)}).url
-
-
-def halloween_spook_value() -> float:
-    curr_date = datetime.datetime.now()
-    start_date = datetime.datetime(curr_date.year, 10, 15, 0)
-    halloween_date = datetime.datetime(curr_date.year, 10, 31, 0)
-    end_date = datetime.datetime(curr_date.year, 11, 2, 0)
-
-    # Check if halloween time
-    if start_date < curr_date < end_date:
-        if curr_date < halloween_date:
-            return (curr_date - start_date) / (halloween_date - start_date)
-        else:
-            return 1
-
-    return 0
+def iterate_emojis_in_string(string: str) -> Iterator[str]:
+    """
+    List all emojis in a string.
+    """
+    for char in string:
+        if char in DISCORD_EMOJI_TO_CODE:
+            yield char
 
 
 async def settings_ask_channel_or_server(ctx: commands.Context, msg_content: str) -> Union[Type[discord.Guild], Type[discord.TextChannel]]:
@@ -75,18 +55,6 @@ async def settings_ask_channel_or_server(ctx: commands.Context, msg_content: str
     return None if question_result == discord.Guild else ctx.channel
 
 
-def to_size(arg: str) -> int:
-    try:
-        size = int(arg)
-    except ValueError:
-        raise commands.BadArgument("Size needs to be a number.")
-
-    if size < MIN_SMILEY_SIZE or size > MAX_SMILEY_SIZE:
-        raise commands.BadArgument(f"Size must be between {MIN_SMILEY_SIZE} and {MAX_SMILEY_SIZE}.")
-
-    return size
-
-
 def to_emoji_name(arg: str) -> str:
     if arg in DISCORD_EMOJI_TO_CODE:
         return DISCORD_EMOJI_TO_CODE[arg].replace(':', '')
@@ -94,36 +62,15 @@ def to_emoji_name(arg: str) -> str:
     raise commands.BadArgument("Not an emoji.")
 
 
-class SettingsDefaultConverter(commands.Converter):
-    def __init__(self, default_value=None):
-        self.default_value = default_value
-
-    async def convert(self, ctx, arg):
-        if "default".startswith(arg):
-            return self.default_value
-        else:
-            raise commands.BadArgument("Not default.")
-
-
-class SettingsChannelConverter(commands.TextChannelConverter):
-    async def convert(self, ctx: commands.Context, arg: str) -> Optional[discord.TextChannel]:
-        """
-        :return: The target channel of the command
-                 None - If no channel given, guild default
-        """
-        if "channel".startswith(arg):
-            return ctx.channel
-        if "server".startswith(arg) or "guild".startswith(arg):
-            return None
-
-        return await super().convert(ctx, arg)
-
-
 def get_cooldown(message: discord.Message) -> commands.Cooldown:
     global cog
 
     rate, per = cog.db.Setting("cooldown", message.guild.id, message.channel.id).read()
     return commands.Cooldown(rate, per, commands.BucketType.channel)
+
+
+def check_if_bot_admin(ctx: commands.Context):
+    return ctx.author.id in ctx.bot.config["admin_users_id"]
 
 
 class FreeSmileyDealerCog:
@@ -137,67 +84,23 @@ class FreeSmileyDealerCog:
             self.static_data = json.load(f)
 
         self.db = Database(self.static_data)
-        self.smiley_emojis = dict()
+        self.smiley_emojis_dict = dict()
 
         self.bot.remove_command("help")
         self.bot.loop.create_task(self.reload_data_continuously())
 
-    async def update_smiley_emojis(self):
-        logging.info("Starting to setup emojis.\n0%")
-        # Iterate emoji names
-        last_completion_percent = 0
-        for emoji_names, i in zip(self.static_data["smileys"], range(len(self.static_data["smileys"]))):
-            # Get and format url
-            dir_name = emoji_names[0]
-            dir_url = f"{self.static_data['base_url']}/{dir_name}"
-            dir_json = json.loads(requests.get(f"{dir_url}?json=true").text)
-
-            if dir_json["files"]:
-                self.smiley_emojis[dir_name] = []
-
-            # Iterate smiley images
-            for file_json in dir_json["files"]:
-                file_name = file_json["name"]
-                animated = ".gif" in file_name
-                smiley_name = f"{dir_name}_{file_name.split('.')[0]}"
-
-                # If no need to update or reaction emoji exists continue
-                if discord.utils.get(self.bot.config_objects["emojis"], name=smiley_name):
-                    continue
-
-                r = requests.get(f"{self.static_data['base_url']}/{dir_name}/{file_name}?"
-                                 f"h={extensions.EMOJI_PIXEL_SIZE}&w={extensions.EMOJI_PIXEL_SIZE}")
-
-                def predicate(g: discord.Guild) -> bool:
-                    return len(list(filter(lambda e: e.animated == animated, g.emojis))) < extensions.MAX_EMOJIS
-
-                guild = next((g for g in self.bot.config_objects["emoji_guilds"] if predicate(g)), None)
-                if not guild:
-                    logging.exception("Not enough space for new emojis.")
-                try:
-                    await guild.create_custom_emoji(name=smiley_name, image=r.content)
-                    logging.info(f"Uploaded emoji `{smiley_name}` to `{guild.name}`.")
-                except discord.HTTPException:
-                    logging.exception(f"Emoji {smiley_name} failed to upload.")
-
-            # Print progress
-            completion_percent = int(((i + 1) / len(self.static_data["smileys"])) * 100)
-            if completion_percent >= last_completion_percent + 10:
-                last_completion_percent += 10
-                if completion_percent == 100:
-                    logging.info("100%\nEmojis setup over.")
-                else:
-                    logging.info(f"{last_completion_percent}%")
-
     def setup_smiley_emojis_dict(self):
+        """
+        Set up dictionary of smiley emojis.
+        """
+        all_smiley_emojis = sum((guild.emojis for guild in self.bot.config_objects["emoji_guilds"]), tuple())
+
         for emoji_names in self.static_data["smileys"]:
             smiley_name = emoji_names[0]
-            emojis = filter(lambda e: e.name.startswith(smiley_name), self.bot.config_objects["emojis"])
-            self.smiley_emojis[smiley_name] = sorted(emojis, key=lambda e: e.name.split('_')[-1])
+            current_smiley_emojis = (e for e in all_smiley_emojis if e.name.startswith(smiley_name))
+            self.smiley_emojis_dict[smiley_name] = sorted(current_smiley_emojis, key=lambda e: e.name.split('_')[-1])
 
     async def on_ready(self):
-        #if not __debug__:
-        #    await self.update_smiley_emojis()
         self.setup_smiley_emojis_dict()
 
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -216,6 +119,10 @@ class FreeSmileyDealerCog:
 
         elif isinstance(error, commands.BadUnionArgument):
             await ctx.send(format(error.errors[1]))
+
+        # Ignore error
+        elif isinstance(error, commands.CheckFailure):
+            return
 
         # Error while executing a command
         if isinstance(error, commands.CommandInvokeError) or __debug__:
@@ -237,7 +144,7 @@ class FreeSmileyDealerCog:
         if not smiley_name:
             return
 
-        return random.choice(self.smiley_emojis[smiley_name])
+        return random.choice(self.smiley_emojis_dict[smiley_name])
 
     async def on_message(self, message: discord.Message):
         # Check if not myself or user not a bot
@@ -248,7 +155,7 @@ class FreeSmileyDealerCog:
         ctx: commands.Context = await self.bot.get_context(message)
         if not ctx.valid:
             # Get first emoji in message
-            emoji = next(emoji_list(message.content), None)
+            emoji = next(iterate_emojis_in_string(message.content), None)
             if emoji:
                 # Invoke command to answer with appropriate smiley
                 new_message = copy.copy(message)
@@ -332,7 +239,7 @@ class FreeSmileyDealerCog:
             return
 
         # Send message to channel
-        heart_emoji = self.smiley_emojis["heart"][0]
+        heart_emoji = self.smiley_emojis_dict["heart"][0]
         help_message = (f":heart: -> {heart_emoji} If you use paid smileys (emojis) in your message, I will correct you.\n"
                         "Type `:joy:` to try it out!\n")
         if ctx.guild:
@@ -461,6 +368,11 @@ class FreeSmileyDealerCog:
 
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
         await ctx.send(f":speaker: {target_user.mention} has been unmuted {target_channel_str}.")
+
+    @commands.command(name="update")
+    @commands.check(check_if_bot_admin)
+    async def command_update(self):
+        await self.setup_smiley_emojis_dict()
 
     # Reload data every once in a while
     async def reload_data_continuously(self):

@@ -76,9 +76,6 @@ class BasicBot(commands.Bot):
                 if f"{const}s_id" in key:
                     self.config_objects[key.replace("_id", "")] = [getattr(self, f"get_{const}")(id) for id in value]
 
-        if "emoji_guilds" in self.config_objects:
-            self.config_objects["emojis"] = sum((guild.emojis for guild in self.config_objects["emoji_guilds"]), tuple())
-
     async def setup_activities(self):
         await self.wait_until_ready()
 
