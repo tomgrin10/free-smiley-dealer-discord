@@ -11,13 +11,9 @@
         "Look at them, they are paying for smileys!",
         "Whoa whoa whoa. What is that?"
     ],
-    "surprise_chance": 1.5,
-    "golden_ralf_chance": 7,
-    "base_url": "https://lusaustr.sirv.com/smileys",
     
     "default_settings": {
         "enabled": true,
-        "smiley_size": 110,
         "lite_mode": false,
         "muted_users": [],
         "cooldown": [3, 6]
@@ -27,7 +23,8 @@
         ["slight_smile", "ssmile"],
         ["upside_down"],
         ["smile", "smile_cat"],
-        ["smiley", "smiley_cat"],
+        ["smiley"],
+        ["smiley_cat"],
         ["grin", "grinning"],
         ["grimace", "grimacing"],
         ["blush", "relaxed"],
@@ -85,9 +82,10 @@
         ["wink"],
         ["relieved"],
         ["cry", "disappointed_relieved", "sob", "cold_sweat"],
-        ["heart_eyes", "heart_eyes_cat"],
-        ["nauseated", "nauseated_face", "puke"],
-        ["rage", "angery"],
+        ["heart_eyes"],
+        ["heart_eyes_cat"],
+        ["nauseated", "nauseated_face"],
+        ["rage"],
         ["gun", "shoot"],
         ["money_mouth"],
         ["japanese_goblin"],
@@ -101,6 +99,10 @@
         ["earth", "earth_africa", "earth_americas", "earth_asia", "globe_with_meridians"],
         ["motorcycle", "motor_scooter"],
         ["boat", "motorboat", "rowboat", "sailboat", "speedboat"],
+        ["clown"],
+        ["grapes"],
+        ["tangerine"],
+        ["poop"],
         ["moon", "crescent_moon", "first_quarter_moon", "first_quarter_moon_with_face", "full_moon", "full_moon_with_face", "last_quarter_moon", "last_quarter_moon_with_face", "new_moon", "new_moon_with_face", "waning_crescent_moon", "waning_gibbous_moon", "waxing_crescent_moon", "waxing_gibbous_moon"],
         ["clock", "alarm_clock", "timer", "watch", "stopwatch", "clock1130", "clock3", "clock1", "clock10", "clock1030", "clock11", "clock12", "clock1230", "clock130", "clock2", "clock230", "clock330", "clock4", "clock430", "clock5", "clock530", "clock6", "clock630", "clock7", "clock730", "clock8", "clock830", "clock9", "clock930"]
     ],
