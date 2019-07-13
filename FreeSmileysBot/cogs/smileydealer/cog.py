@@ -144,7 +144,11 @@ class FreeSmileyDealerCog:
         if not smiley_name or smiley_name not in self.smiley_emojis_dict:
             return
 
-        return random.choice(self.smiley_emojis_dict[smiley_name])
+        emojis = self.smiley_emojis_dict[smiley_name]
+        if not emojis:
+            return
+
+        return random.choice(emojis)
 
     async def on_message(self, message: discord.Message):
         # Check if not myself or user not a bot
