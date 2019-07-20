@@ -10,6 +10,7 @@ from typing import *
 import discord
 from discord.ext import commands
 
+import utils
 import extensions
 from .converters import SettingsDefaultConverter, SettingsChannelConverter
 from database import Database, is_enabled, author_not_muted
@@ -146,6 +147,9 @@ class FreeSmileyDealerCog:
             except discord.Forbidden:
                 pass
 
+    def get_emoji_name_from_unicode(self, emoji_unicode: str) -> str:
+        return DISCORD_EMOJI_TO_CODE[emoji_unicode].replace(':', '')
+
     def get_smiley_name(self, emoji_name: str) -> str:
         # Iterate emojis in data
         for emoji_names in self.db.static_data["smileys"]:
@@ -167,49 +171,65 @@ class FreeSmileyDealerCog:
         return random.choice(emojis)
 
     async def on_message(self, message: discord.Message):
-        # Check if not myself or user not a bot
-        if message.author == self.bot.user or message.author.bot:
-            return
-
         # Check if message executes command
         ctx: commands.Context = await self.bot.get_context(message)
         if not ctx.valid:
-            # Get first emoji in message
-            emoji = next(iterate_emojis_in_string(message.content), None)
-            if emoji:
-                # Invoke command to answer with appropriate smiley
-                new_message = copy.copy(message)
-                new_message.content = emoji
-                new_ctx: commands.Context = await self.bot.get_context(new_message)
-                command: commands.Command = self.bot.get_command("_on_message")
-                new_ctx.command = command
-                await self.bot.invoke(new_ctx)
+            # Invoke command to answer with appropriate smiley
+            new_message = copy.copy(message)
+            new_message.content = message.content
+            new_ctx: commands.Context = await self.bot.get_context(new_message)
+            command: commands.Command = self.bot.get_command("_on_message")
+            new_ctx.command = command
+            await self.bot.invoke(new_ctx)
+
+    async def send_smiley_emojis(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
+        """
+        Send smiley emojis with a title (not lite-mode).
+        """
+        title = random.choice(self.db.static_data['titles'])
+        await ctx.send(f"{ctx.author.mention} {title}")
+        await ctx.send(' '.join(str(emoji) for emoji in emojis))
+
+    async def react_with_smileys(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
+        """
+        React with smiley emojis (lite-mode).
+        """
+        for emoji in emojis:
+            await ctx.message.add_reaction(emoji)
 
     @extensions.command(name="_on_message", hidden=True)
     @commands.guild_only()
     @is_enabled()
     @author_not_muted()
-    async def command__on_message(self, ctx: commands.Context, emoji: str):
-        emoji_name = DISCORD_EMOJI_TO_CODE[emoji].replace(':', '')
+    async def command__on_message(self, ctx: commands.Context, *, message_content):
+        # Check if not myself or user not a bot
+        if ctx.author == self.bot.user or ctx.author.bot:
+            return
 
-        async def send_smiley_emoji():
-            emoji = self.get_smiley_reaction_emoji(emoji_name)
-            if emoji:
-                await ctx.send(f"{ctx.author.mention} {random.choice(self.db.static_data['titles'])}")
-                await ctx.send(str(emoji))
+        smiley_names_generator = utils.iter_unique_values((
+            self.get_smiley_name(self.get_emoji_name_from_unicode(emoji_unicode))
+            for emoji_unicode in iterate_emojis_in_string(message_content)))
 
-        async def react_with_smiley():
-            emoji = self.get_smiley_reaction_emoji(emoji_name)
-            if emoji:
-                await ctx.message.add_reaction(emoji)
+        smiley_emojis_generator = (
+            self.get_smiley_reaction_emoji(smiley_name)
+            for smiley_name in smiley_names_generator)
+
+        smiley_emojis = list(
+            itertools.islice(
+                (smiley_emoji for smiley_emoji in smiley_emojis_generator if smiley_emoji),
+                5))
+
+        # Check if there any emojis in message
+        if not smiley_emojis:
+            return
 
         # Regular mode
         if not self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id).read():
-            await send_smiley_emoji()
+            await self.send_smiley_emojis(ctx, smiley_emojis)
 
         # Lite mode
         else:
-            await react_with_smiley()
+            await self.react_with_smileys(ctx, smiley_emojis)
 
     @extensions.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context, command: extensions.CommandConverter = None):
