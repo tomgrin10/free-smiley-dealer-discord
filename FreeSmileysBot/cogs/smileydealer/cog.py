@@ -1,20 +1,16 @@
 import asyncio
 import copy
-import datetime
 import json
 import logging
 import random
-import time
 from typing import *
 
 import discord
-import requests
 from discord.ext import commands
 
 import extensions
 from .converters import SettingsDefaultConverter, SettingsChannelConverter
-from extensions import BasicBot
-from .database import Database, is_enabled, author_not_muted
+from database import Database, is_enabled, author_not_muted
 
 # Constants
 STATIC_DATA_FILENAME = "static_data.json"
@@ -74,28 +70,24 @@ def check_if_bot_admin(ctx: commands.Context):
 
 
 class FreeSmileyDealerCog:
-    def __init__(self, bot: BasicBot):
+    def __init__(self, bot: 'extensions.BasicBot', db: Optional[Database] = None):
         global cog
         cog = self
         self.bot = bot
 
-        self.static_data_filename = STATIC_DATA_FILENAME
-        with open(STATIC_DATA_FILENAME, 'r') as f:
-            self.static_data = json.load(f)
-
-        self.db = Database(self.static_data)
+        self.db = db or Database()
         self.smiley_emojis_dict = dict()
 
         self.bot.remove_command("help")
-        self.bot.loop.create_task(self.reload_data_continuously())
 
     def setup_smiley_emojis_dict(self):
         """
         Set up dictionary of smiley emojis.
         """
-        all_smiley_emojis = sum((guild.emojis for guild in self.bot.config_objects["emoji_guilds"]), tuple())
+        emoji_guilds = (self.bot.get_guild(int(id)) for id in self.db.config["emoji_guilds_id"])
+        all_smiley_emojis = sum((guild.emojis for guild in emoji_guilds), tuple())
 
-        for emoji_names in self.static_data["smileys"]:
+        for emoji_names in self.db.static_data["smileys"]:
             smiley_name = emoji_names[0]
             current_smiley_emojis = (e for e in all_smiley_emojis if e.name.startswith(smiley_name))
             self.smiley_emojis_dict[smiley_name] = sorted(current_smiley_emojis, key=lambda e: e.name.split('_')[-1])
@@ -134,7 +126,7 @@ class FreeSmileyDealerCog:
 
     def get_smiley_name(self, emoji_name: str) -> Optional[str]:
         # Iterate emojis in data
-        for emoji_names in self.static_data["smileys"]:
+        for emoji_names in self.db.static_data["smileys"]:
             if emoji_name in emoji_names:
                 return emoji_names[0]
 
@@ -179,7 +171,7 @@ class FreeSmileyDealerCog:
         async def send_smiley_emoji():
             emoji = self.get_smiley_reaction_emoji(emoji_name)
             if emoji:
-                await ctx.send(f"{ctx.author.mention} {random.choice(self.static_data['titles'])}")
+                await ctx.send(f"{ctx.author.mention} {random.choice(self.db.static_data['titles'])}")
                 await ctx.send(str(emoji))
 
         async def react_with_smiley():
@@ -377,22 +369,6 @@ class FreeSmileyDealerCog:
     @commands.check(check_if_bot_admin)
     async def command_update(self, ctx: commands.Context):
         await ctx.send("Updating...")
-        self.bot.setup_config_objects()
         self.setup_smiley_emojis_dict()
+        self.db.update_configurations()
         await ctx.send("Finished updating.")
-
-    # Reload data every once in a while
-    async def reload_data_continuously(self):
-        await self.bot.wait_until_ready()
-        while True:
-            sleep_task = asyncio.create_task(asyncio.sleep(60))
-            try:
-                t0 = time.time()
-
-                with open(STATIC_DATA_FILENAME, 'r') as f:
-                    self.static_data = json.load(f)
-
-                print(f"Reloaded data in {int(round((time.time() - t0) * 1000))} ms.")
-            finally:
-                await sleep_task
-

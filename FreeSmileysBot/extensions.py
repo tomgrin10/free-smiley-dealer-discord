@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 import time
 import datetime
@@ -8,12 +7,10 @@ from typing import *
 import discord
 from discord.ext import commands
 
+from database import Database
+
 # Constants
-CONFIG_FILENAME = "config.json"
-LOG_FILENAME = "log.txt"
 MESSAGE_CHARACTER_LIMIT = 2000
-MAX_EMOJIS = 50
-EMOJI_PIXEL_SIZE = 128
 T0 = time.time()
 
 __all__ = ['Command', 'command', 'BasicBot', 'DiscordChannelLoggingHandler', 'CommandConverter']
@@ -56,37 +53,24 @@ def command(**kwargs):
 
 class BasicBot(commands.Bot):
     def __init__(self):
-        with open(CONFIG_FILENAME) as f:
-            self.config = json.load(f)
-        self.config_objects = dict()
+        self.db = Database()
 
         super().__init__(
-            command_prefix=commands.when_mentioned_or(self.config["prefix"])
+            command_prefix=commands.when_mentioned_or(self.db.config["prefix"])
         )
 
         self.add_cog(BasicBot.Commands(self))
 
-    def setup_config_objects(self):
-        consts = ("guild", "channel")
-
-        for key, value in self.config.items():
-            for const in consts:
-                if f"{const}_id" in key:
-                    self.config_objects[key.replace("_id", "")] = getattr(self, f"get_{const}")(value)
-                if f"{const}s_id" in key:
-                    self.config_objects[key.replace("_id", "")] = [getattr(self, f"get_{const}")(id) for id in value]
-
     async def setup_activities(self):
         await self.wait_until_ready()
 
-        if "activities" in self.config:
+        if "activities" in self.db.config:
             self.loop.create_task(self.continuously_change_presence())
 
     def run(self):
-        super().run(self.config["token"])
+        super().run(self.db.config["token"])
 
     async def on_ready(self):
-        self.setup_config_objects()
         await self.setup_activities()
         logging.info("Bot is ready.")
         logging.info(f"{len(self.guilds)} guilds:\n{[g.name for g in sorted(self.guilds, key=lambda g: g.member_count, reverse=True)[:50]]}")
@@ -96,10 +80,7 @@ class BasicBot(commands.Bot):
 
     async def log(self, content: str, channel: discord.TextChannel = None):
         if not channel:
-            try:
-                channel = self.config_objects["log_channel"]
-            except KeyError:
-                channel = self.get_channel(self.config["log_channel_id"])
+            channel = self.get_channel(int(self.db.config["log_channel_id"]))
         content = content.replace("@everyone", "`@everyone`").replace("@here", "`@here`")
 
         for segment in split_message_for_discord(content):
@@ -131,10 +112,10 @@ class BasicBot(commands.Bot):
 
             return discord.Activity(
                 type=act_type,
-                name=act_name.format(guilds_count=len(self.guilds), prefix=self.config["prefix"]))
+                name=act_name.format(guilds_count=len(self.guilds), prefix=self.db.config["prefix"]))
 
         while True:
-            for activity_str in self.config["activities"]:
+            for activity_str in self.db.config["activities"]:
                 await self.change_presence(activity=make_activity(activity_str))
                 await asyncio.sleep(60)
 

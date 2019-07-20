@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     try:
         bot.add_cog(FreeSmileyDealerCog(bot))
-        bot.add_cog(DiscordBotsOrgAPI(bot, bot.config["dbl_api_key"]))
+        bot.add_cog(DiscordBotsOrgAPI(bot, bot.db.config["dbl_api_key"]))
         bot.run()
     except Exception as e:
         logging.exception(e)

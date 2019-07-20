@@ -24,12 +24,15 @@ class Database:
     Class representing a mongodb database
     """
 
-    def __init__(self, static_data):
-        self._static_data = static_data
-
+    def __init__(self):
         self._client = pymongo.MongoClient(serverSelectionTimeoutMS=3)
         self._client.server_info()
         self._db = self._client["smiley_dealer"]
+
+        self.static_data = {}
+        self.config = {}
+        self.update_configurations()
+
         self._cache = OrderedDict()
         self.data_fixer_upper()
 
@@ -61,7 +64,7 @@ class Database:
         pass
 
     def get_global_default_setting(self, setting_name: str):
-        return self._static_data["default_settings"][setting_name]
+        return self.static_data["default_settings"][setting_name]
 
     def _get_setting_from_document(self, setting_name, document, channel_id: Optional[int] = None):
         if not document:
@@ -90,14 +93,14 @@ class Database:
         :return: The settings dictionary
         """
         if not guild_id:
-            return self._static_data["default_settings"]
+            return self.static_data["default_settings"]
 
         guild_data = self._get_guild_document(guild_id)
         if not guild_data:
-            return self._static_data["default_settings"]
+            return self.static_data["default_settings"]
 
         settings = dict()
-        for setting_name in self._static_data["default_settings"]:
+        for setting_name in self.static_data["default_settings"]:
             settings[setting_name] = self._get_setting_from_document(setting_name, guild_data, channel_id)
 
     def _get_setting(self, setting_name: str, guild_id: Optional[int] = None, channel_id: Optional[int] = None) -> Any:
@@ -157,6 +160,10 @@ class Database:
         # Remove from cache
         if guild_id in self._cache:
             self._cache.pop(guild_id)
+
+    def update_configurations(self):
+        self.static_data = self._db["configurations"].find_one({"_id": "static_data"})
+        self.config = self._db["configurations"].find_one({"_id": "config"})
 
 
 class _Setting:
