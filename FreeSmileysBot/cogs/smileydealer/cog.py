@@ -1,8 +1,10 @@
 import asyncio
 import copy
+import itertools
 import json
 import logging
 import random
+import re
 from typing import *
 
 import discord
@@ -66,7 +68,21 @@ def get_cooldown(message: discord.Message) -> commands.Cooldown:
 
 
 def check_if_bot_admin(ctx: commands.Context):
-    return ctx.author.id in ctx.bot.config["admin_users_id"]
+    return ctx.author.id in ctx.bot.db.config["admin_users_id"]
+
+
+def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple[str, int]]:
+    """
+    Split smiley emoji name into its two core parts: the name and the index.
+    'smiley_12' -> ('smiley', 12)
+    Returns None if the name is invalid.
+    :param smiley_emoji_name: The full name of the smiley emoji.
+    :return: The core parts of the smiley emoji's name.
+    """
+    match = re.search(r"(\S*)_(\d+)", smiley_emoji_name)
+    if match:
+        parts = match.groups()
+        return parts[0], int(parts[1])
 
 
 class FreeSmileyDealerCog:
@@ -85,12 +101,18 @@ class FreeSmileyDealerCog:
         Set up dictionary of smiley emojis.
         """
         emoji_guilds = (self.bot.get_guild(int(id)) for id in self.db.config["emoji_guilds_id"])
-        all_smiley_emojis = sum((guild.emojis for guild in emoji_guilds), tuple())
+        all_smiley_emojis: Generator[discord.Emoji] = sum((guild.emojis for guild in emoji_guilds), tuple())
 
-        for emoji_names in self.db.static_data["smileys"]:
-            smiley_name = emoji_names[0]
-            current_smiley_emojis = (e for e in all_smiley_emojis if e.name.startswith(smiley_name))
-            self.smiley_emojis_dict[smiley_name] = sorted(current_smiley_emojis, key=lambda e: e.name.split('_')[-1])
+        counter = 0
+        for smiley_emoji, counter in zip(all_smiley_emojis, itertools.count(1)):
+            smiley_name_parts = split_smiley_emoji_name_into_parts(smiley_emoji.name)
+            if smiley_name_parts is None:
+                continue
+
+            smiley_name, _ = smiley_name_parts
+            self.smiley_emojis_dict.setdefault(smiley_name, []).append(smiley_emoji)
+
+        logging.info(f"Detected {counter} smiley emojis.")
 
     async def on_ready(self):
         self.setup_smiley_emojis_dict()
@@ -124,16 +146,18 @@ class FreeSmileyDealerCog:
             except discord.Forbidden:
                 pass
 
-    def get_smiley_name(self, emoji_name: str) -> Optional[str]:
+    def get_smiley_name(self, emoji_name: str) -> str:
         # Iterate emojis in data
         for emoji_names in self.db.static_data["smileys"]:
             if emoji_name in emoji_names:
                 return emoji_names[0]
 
+        return emoji_name
+
     def get_smiley_reaction_emoji(self, emoji_name: str) -> Optional[discord.Emoji]:
         # Get smiley name from emoji name
         smiley_name = self.get_smiley_name(emoji_name)
-        if not smiley_name or smiley_name not in self.smiley_emojis_dict:
+        if smiley_name not in self.smiley_emojis_dict:
             return
 
         emojis = self.smiley_emojis_dict[smiley_name]
@@ -211,7 +235,7 @@ class FreeSmileyDealerCog:
             explanation = command.description if long and command.description else command.brief
             if explanation:
                 value += f"{explanation}"
-            command_call = f"{self.bot.config['prefix']}{sorted([command.name] + command.aliases, key=len)[0]}"
+            command_call = f"{self.bot.db.config['prefix']}{sorted([command.name] + command.aliases, key=len)[0]}"
             # Command usage format
             if command.usage:
                 value += f"\n**Format:** {command_call} {command.usage}"
@@ -265,8 +289,8 @@ class FreeSmileyDealerCog:
             command_names=("litemode", "blacklist", "mute")))
 
         await ctx.author.send(":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
-                              f"**Join my server!** {self.bot.config['support_guild_url']}\n"
-                              f"**Donate to keep the bot alive!** {self.bot.config['donate_url']}")
+                              f"**Join my server!** {self.bot.db.config['support_guild_url']}\n"
+                              f"**Donate to keep the bot alive!** {self.bot.db.config['donate_url']}")
 
     @extensions.command(name="litemode", aliases=["lite"], category="settings",
                         brief="Litemode is a less spammy way to correct people.\nInstead of sending an image I will react with the smiley.",
