@@ -137,10 +137,10 @@ class FreeSmileyDealerCog:
 
         # Ignore error
         elif isinstance(error, commands.CheckFailure):
-            return
+            pass
 
         # Error while executing a command
-        if isinstance(error, commands.CommandInvokeError) or __debug__:
+        elif isinstance(error, commands.CommandInvokeError) or __debug__:
             logging.exception(error)
             try:
                 await ctx.send(format("An error has occurred."))
@@ -217,7 +217,7 @@ class FreeSmileyDealerCog:
         smiley_emojis = list(
             itertools.islice(
                 (smiley_emoji for smiley_emoji in smiley_emojis_generator if smiley_emoji),
-                5))
+                self.db.Setting("max_smileys", ctx.guild.id, ctx.channel.id).read()))
 
         # Check if there any emojis in message
         if not smiley_emojis:
@@ -306,7 +306,7 @@ class FreeSmileyDealerCog:
             description="** You can add `s|server` `c|channel` `#some_channel` to the end of the command to specify where to change setting.\n"
                         "Example: s!lite on channel",
             colour=0x7bb3b5,
-            command_names=("litemode", "blacklist", "mute")))
+            command_names=("litemode", "maxsmileys", "blacklist", "mute")))
 
         await ctx.author.send(":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
                               f"**Join my server!** {self.bot.db.config['support_guild_url']}\n"
@@ -314,7 +314,7 @@ class FreeSmileyDealerCog:
 
     @extensions.command(name="litemode", aliases=["lite"], category="settings",
                         brief="Litemode is a less spammy way to correct people.\nInstead of sending an image I will react with the smiley.",
-                        usage="[on/off|*default*] [**]")
+                        usage="[on/off | *default*] [**]")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     async def command_litemode(self, ctx: commands.Context,
@@ -338,6 +338,34 @@ class FreeSmileyDealerCog:
                        (f"turned `{on_off(mode)}`." if mode is not None else f"returned to " +
                         (f"server default `{on_off(self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
                          f"global default `{on_off(self.db.get_global_default_setting('lite_mode'))}`.")))
+
+    @extensions.command(name="maxsmileys", aliases=["max"], category="settings",
+                        brief="Change the maximum count of smileys I will react to. (Default is 5)",
+                        usage="[number | *default*] [**]")
+    @commands.guild_only()
+    @commands.has_permissions(manage_channels=True)
+    async def command_max_smileys(self, ctx: commands.Context,
+                                  max_smileys_count: Union[SettingsDefaultConverter, int],
+                                  target_channel: SettingsChannelConverter = "ask"):
+        if not (1 <= max_smileys_count <= 20):
+            raise commands.BadArgument("Max smileys count needs to be between 1-20.")
+
+        if target_channel == "ask":
+            # Ask user if he wants change to server or channel
+            target_channel = await settings_ask_channel_or_server(
+                ctx,
+                f"Do you want to change the max smileys count for the channel or the server default?")
+
+            # Update database
+            self.db.Setting("max_smileys", guild_id=ctx.guild.id, channel_id=target_channel.id if target_channel else None) \
+                .change(max_smileys_count)
+
+            # Send confirmation
+            target_str = 'server default' if not target_channel else target_channel.mention
+            await ctx.send(f":white_check_mark: {target_str.capitalize()} max smileys count " +
+                           (f"changed to `{max_smileys_count}`." if max_smileys_count is not None else f"returned to " +
+                            (f"server default `{self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
+                             f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
 
     @extensions.command(name="blacklist", aliases=["bl"], category="settings", opposite="whitelist",
                         brief="Blacklist a channel from the bot.",
