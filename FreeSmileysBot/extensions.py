@@ -127,15 +127,15 @@ class BasicBot(commands.Bot):
                  brief="Invite me to your server!")
         async def command_invite(self, ctx):
             try:
-                await ctx.send(self.bot.config["invite_url"])
+                await ctx.send(self.bot.db.config["invite_url"])
             except KeyError:
                 pass
 
         @command(name="server", aliases=[], category="commands",
                  brief="Get an invite to my support server for help or suggestions.")
-        async def command_support(self, ctx):
+        async def command_server(self, ctx):
             try:
-                await ctx.send(self.bot.config["support_guild_url"])
+                await ctx.send(self.bot.db.config["support_guild_url"])
             except KeyError:
                 pass
 
@@ -143,7 +143,7 @@ class BasicBot(commands.Bot):
                  brief="Get a donation link to help me maintain this bot.")
         async def command_donate(self, ctx):
             try:
-                await ctx.send(self.bot.config["donate_url"])
+                await ctx.send(self.bot.db.config["donate_url"])
             except KeyError:
                 pass
 
