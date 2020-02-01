@@ -3,10 +3,10 @@
 __pycache__/
 
 # JetBrains
-FreeSmileysBot/\.idea/
-FreeSmileysBot/config\.json
+.idea/
 
 # App
+FreeSmileysBot/config\.json
 FreeSmileysBot/test\.py
 FreeSmileysBot/dynamic_data\.json
 log.txt
