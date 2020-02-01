@@ -2,8 +2,22 @@
 *.pyc
 __pycache__/
 
+# Pipenv
+Pipfile.lock
+
 # JetBrains
 .idea/
+
+# Packages
+*.egg
+!/tests/**/*.egg
+/*.egg-info
+/tests/fixtures/**/*.egg-info
+/dist/*
+build
+_build
+.cache
+*.so
 
 # App
 FreeSmileysBot/config\.json
