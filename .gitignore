@@ -1,13 +1,13 @@
-
-FreeSmileysBot/\.idea/
-
-FreeSmileysBot/config\.json
-
-FreeSmileysBot/test\.py
-
-FreeSmileysBot/dynamic_data\.json
-
+# Python
+*.pyc
 __pycache__/
 
+# JetBrains
+FreeSmileysBot/\.idea/
+FreeSmileysBot/config\.json
+
+# App
+FreeSmileysBot/test\.py
+FreeSmileysBot/dynamic_data\.json
 log.txt
 log.txt.*
