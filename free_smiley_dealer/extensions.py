@@ -34,8 +34,8 @@ def split_message_for_discord(content: str, divider: str = None) -> Iterable[str
 
 
 class Command(commands.Command):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, func, **kwargs):
+        super().__init__(func, **kwargs)
 
         self.examples = kwargs.pop("examples", ())
         self.category = kwargs.pop("category", None)
@@ -52,7 +52,7 @@ def command(**kwargs):
 
 
 class BasicBot(commands.Bot):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         self.db = Database()
 
         super().__init__(
@@ -66,9 +66,6 @@ class BasicBot(commands.Bot):
 
         if "activities" in self.db.config:
             self.loop.create_task(self.continuously_change_presence())
-
-    def run(self):
-        super().run(self.db.config["token"])
 
     async def on_ready(self):
         await self.setup_activities()
@@ -119,7 +116,7 @@ class BasicBot(commands.Bot):
                 await self.change_presence(activity=make_activity(activity_str))
                 await asyncio.sleep(60)
 
-    class Commands:
+    class Commands(commands.Cog):
         def __init__(self, bot):
             self.bot = bot
 
