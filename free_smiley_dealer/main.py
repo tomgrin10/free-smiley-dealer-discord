@@ -34,7 +34,7 @@ if __name__ == "__main__":
         logger.info('MONGODB_URI environment variable not supplied, '
                     'connecting to localhost.')
     pymongo_client = pymongo.MongoClient(
-        env.str('MONGODB_URI', None),
+        mongodb_uri,
         serverSelectionTimeoutMS=3)
 
     database = Database(pymongo_client)
@@ -48,7 +48,12 @@ if __name__ == "__main__":
         bot.add_cog(FreeSmileyDealerCog(bot, database))
         dbl_api_key = env.str('DBL_API_KEY', None)
         if dbl_api_key:
+            logger.info('MONGODB_URI environment variable supplied, '
+                        'setting up TopGG cog.')
             bot.add_cog(TopGG(bot, dbl_api_key))
+        else:
+            logger.info('MONGODB_URI environment variable not supplied, '
+                        'not setting up TopGG cog.')
             
         bot.run(env.str('DISCORD_TOKEN'))
     except Exception as e:
