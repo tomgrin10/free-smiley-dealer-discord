@@ -1,1 +1,1 @@
-from .cog import FreeSmileyDealerCog
+from .core import FreeSmileyDealerCog

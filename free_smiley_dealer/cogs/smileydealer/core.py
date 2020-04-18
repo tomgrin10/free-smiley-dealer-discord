@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import copy
 import itertools
@@ -10,10 +12,10 @@ from typing import *
 import discord
 from discord.ext import commands
 
-import utils
 import extensions
-from .converters import SettingsDefaultConverter, SettingsChannelConverter
+import utils
 from database import Database, is_enabled, author_not_muted
+from .converters import SettingsDefaultConverter, SettingsChannelConverter
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
@@ -87,12 +89,12 @@ def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple
 
 
 class FreeSmileyDealerCog(commands.Cog):
-    def __init__(self, bot: 'extensions.BasicBot', db: Optional[Database] = None):
+    def __init__(self, bot: extensions.BasicBot, db: Database):
         global cog
         cog = self
         self.bot = bot
 
-        self.db = db or Database()
+        self.db = db
         self.smiley_emojis_dict = dict()
 
         self.bot.remove_command("help")

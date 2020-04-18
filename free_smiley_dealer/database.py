@@ -24,9 +24,8 @@ class Database:
     Class representing a mongodb database
     """
 
-    def __init__(self):
-        self._client = pymongo.MongoClient(serverSelectionTimeoutMS=3)
-        self._client.server_info()
+    def __init__(self, pymongo_client: pymongo.MongoClient):
+        self._client = pymongo_client
         self._db = self._client["smiley_dealer"]
 
         self.static_data = {}

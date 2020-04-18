@@ -52,8 +52,8 @@ def command(**kwargs):
 
 
 class BasicBot(commands.Bot):
-    def __init__(self, *args, **kwargs):
-        self.db = Database()
+    def __init__(self, db: Database, *args, **kwargs):
+        self.db = db
 
         super().__init__(
             command_prefix=commands.when_mentioned_or(self.db.config["prefix"])

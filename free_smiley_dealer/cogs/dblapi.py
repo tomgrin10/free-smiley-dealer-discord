@@ -3,12 +3,13 @@ import logging
 
 import dbl
 from discord.ext import commands, tasks
+from discord.ext.commands import Bot
 
 
 class TopGG(commands.Cog):
     """Handles interactions with the top.gg API"""
 
-    def __init__(self, bot, token):
+    def __init__(self, bot: Bot, token: str):
         self.bot = bot
         self.token = token
         self.dbl_client = dbl.Client(self.bot, self.token)
