@@ -14,22 +14,35 @@ if __name__ == "__main__":
     env = environs.Env()
     env.read_env()
 
-    pymongo_client = pymongo.MongoClient(env.str('MONGODB_URI', None))
-    database = Database(pymongo_client)
-
-    bot = BasicBot(database)
-
+    discord_log_handler = DiscordChannelLoggingHandler()
     # noinspection PyArgumentList
     logging.basicConfig(
         level=logging.INFO,
         handlers=(
-            DiscordChannelLoggingHandler(bot),
+            discord_log_handler,
             logging.StreamHandler(sys.stdout),
             RotatingFileHandler("log.txt", maxBytes=100_000, backupCount=1)),
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}",
         style="{"
     )
+    logger = logging.getLogger(__name__)
+
+    logger.info('Setting up mongodb client.')
+    mongodb_uri = env.str('MONGODB_URI', None)
+    if not mongodb_uri:
+        logger.info('MONGODB_URI environment variable not supplied, '
+                    'connecting to localhost.')
+    pymongo_client = pymongo.MongoClient(
+        env.str('MONGODB_URI', None),
+        serverSelectionTimeoutMS=3)
+
+    database = Database(pymongo_client)
+    logger.info('Set up mongodb client successfully.')
+
+    bot = BasicBot(database)
+    discord_log_handler.bot = bot
+    logger.info('Added discord logging handler.')
 
     try:
         bot.add_cog(FreeSmileyDealerCog(bot, database))
@@ -39,4 +52,4 @@ if __name__ == "__main__":
             
         bot.run(env.str('DISCORD_TOKEN'))
     except Exception as e:
-        logging.exception(e)
+        logger.exception(e)

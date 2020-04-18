@@ -25,6 +25,8 @@ with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
     DISCORD_CODE_TO_EMOJI = json.load(f)
     DISCORD_EMOJI_TO_CODE = {v: k for k, v in DISCORD_CODE_TO_EMOJI.items()}
 
+logger = logging.getLogger(__name__)
+
 
 def iterate_emojis_in_string(string: str) -> Iterator[str]:
     """
@@ -115,7 +117,7 @@ class FreeSmileyDealerCog(commands.Cog):
             smiley_name, _ = smiley_name_parts
             self.smiley_emojis_dict.setdefault(smiley_name, []).append(smiley_emoji)
 
-        logging.info(f"Detected {counter} smiley emojis.")
+        logger.info(f"Detected {counter} smiley emojis.")
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -145,7 +147,7 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Error while executing a command
         elif isinstance(error, commands.CommandInvokeError) or __debug__:
-            logging.exception(error)
+            logger.exception(error)
             try:
                 await ctx.send(format("An error has occurred."))
             except discord.Forbidden:

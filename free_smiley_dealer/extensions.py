@@ -15,6 +15,8 @@ T0 = time.time()
 
 __all__ = ['Command', 'command', 'BasicBot', 'DiscordChannelLoggingHandler', 'CommandConverter']
 
+logger = logging.getLogger(__name__)
+
 
 def split_message_for_discord(content: str, divider: str = None) -> Iterable[str]:
     if divider is None:
@@ -69,11 +71,11 @@ class BasicBot(commands.Bot):
 
     async def on_ready(self):
         await self.setup_activities()
-        logging.info("Bot is ready.")
-        logging.info(f"{len(self.guilds)} guilds:\n{[g.name for g in sorted(self.guilds, key=lambda g: g.member_count, reverse=True)[:50]]}")
+        logger.info("Bot is ready.")
+        logger.info(f"{len(self.guilds)} guilds:\n{[g.name for g in sorted(self.guilds, key=lambda g: g.member_count, reverse=True)[:50]]}")
 
     async def on_error(self, event_method, *args, **kwargs):
-        logging.exception("")
+        logger.exception("")
 
     async def log(self, content: str, channel: discord.TextChannel = None):
         if not channel:
@@ -164,11 +166,11 @@ class BasicBot(commands.Bot):
             if to_log in shortcuts:
                 to_log = shortcuts[to_log]
 
-            logging.info(f"`{ctx.message.content}`\n{eval(to_log)}")
+            logger.info(f"`{ctx.message.content}`\n{eval(to_log)}")
 
 
 class DiscordChannelLoggingHandler(logging.Handler):
-    def __init__(self, bot: BasicBot, min_level=logging.INFO):
+    def __init__(self, bot: Optional[BasicBot] = None, min_level=logging.INFO):
         super().__init__()
         self.bot = bot
         self.min_level = min_level
@@ -177,9 +179,11 @@ class DiscordChannelLoggingHandler(logging.Handler):
         if record.levelno < self.min_level:
             return
 
+        if not self.bot or not self.bot.is_ready():
+            return
+
         formatted_record = self.format(record)
-        if self.bot.is_ready():
-            self.bot.loop.create_task(self.bot.log(formatted_record))
+        self.bot.loop.create_task(self.bot.log(formatted_record))
 
 
 class CommandConverter(commands.Converter):
