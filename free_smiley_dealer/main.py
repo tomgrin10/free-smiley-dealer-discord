@@ -14,7 +14,7 @@ if __name__ == "__main__":
     env = environs.Env()
     env.read_env()
 
-    discord_log_handler = DiscordChannelLoggingHandler()
+    discord_log_handler = DiscordChannelLoggingHandler(env.int('LOG_CHANNEL'))
     # noinspection PyArgumentList
     logging.basicConfig(
         level=logging.INFO,

@@ -10,6 +10,7 @@ import re
 from typing import *
 
 import discord
+import emoji
 from discord.ext import commands
 
 import extensions
@@ -32,9 +33,7 @@ def iterate_emojis_in_string(string: str) -> Iterator[str]:
     """
     List all emojis in a string.
     """
-    for char in string:
-        if char in DISCORD_EMOJI_TO_CODE:
-            yield char
+    return (d['emoji'] for d in emoji.emoji_lis(string))
 
 
 async def settings_ask_channel_or_server(
@@ -56,20 +55,6 @@ async def settings_ask_channel_or_server(
 
     question_result = {v: k for k, v in emojis_dict.items()}[answer_emoji]
     return None if question_result == discord.Guild else ctx.channel
-
-
-def to_emoji_name(arg: str) -> str:
-    if arg in DISCORD_EMOJI_TO_CODE:
-        return DISCORD_EMOJI_TO_CODE[arg].replace(':', '')
-
-    raise commands.BadArgument("Not an emoji.")
-
-
-def get_cooldown(message: discord.Message) -> commands.Cooldown:
-    global cog
-
-    rate, per = cog.db.Setting("cooldown", message.guild.id, message.channel.id).read()
-    return commands.Cooldown(rate, per, commands.BucketType.channel)
 
 
 def check_if_bot_admin(ctx: commands.Context):
@@ -147,14 +132,19 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Error while executing a command
         elif isinstance(error, commands.CommandInvokeError) or __debug__:
-            logger.exception(error)
             try:
                 await ctx.send(format("An error has occurred."))
             except discord.Forbidden:
                 pass
+            raise error
 
     def get_emoji_name_from_unicode(self, emoji_unicode: str) -> str:
-        return DISCORD_EMOJI_TO_CODE[emoji_unicode].replace(':', '')
+        if emoji_unicode in DISCORD_EMOJI_TO_CODE:
+            emoji_name = DISCORD_EMOJI_TO_CODE[emoji_unicode]
+        else:
+            emoji_name = emoji.UNICODE_EMOJI[emoji_unicode]
+
+        return emoji_name.replace(':', '')
 
     def get_smiley_name(self, emoji_name: str) -> str:
         # Iterate emojis in data
@@ -189,12 +179,30 @@ class FreeSmileyDealerCog(commands.Cog):
             new_ctx.command = command
             await self.bot.invoke(new_ctx)
 
-    async def send_smiley_emojis(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
+    async def friday(self, ctx: commands.Context):
+        if 'friday' in ctx.message.content.lower():
+            if utils.chance(25):
+                friday_emoji = random.choice(self.smiley_emojis_dict['friday'])
+
+                # Regular mode
+                if not self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id).read():
+                    await self.send_smiley_emojis(ctx, [friday_emoji], add_title=False)
+
+                # Lite mode
+                else:
+                    await self.react_with_smileys(ctx, [friday_emoji])
+
+    async def send_smiley_emojis(
+            self,
+            ctx: commands.Context,
+            emojis: Sequence[discord.Emoji],
+            *, add_title=True):
         """
         Send smiley emojis with a title (not lite-mode).
         """
         title = random.choice(self.db.static_data['titles'])
-        await ctx.send(f"{ctx.author.mention} {title}")
+        if add_title:
+            await ctx.send(f"{ctx.author.mention} {title}")
         await ctx.send(' '.join(str(emoji) for emoji in emojis))
 
     async def react_with_smileys(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
@@ -228,6 +236,7 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Check if there any emojis in message
         if not smiley_emojis:
+            await self.friday(ctx)
             return
 
         # Regular mode
@@ -348,9 +357,9 @@ class FreeSmileyDealerCog(commands.Cog):
         target_str = 'server default' if not target_channel else target_channel.mention
         await ctx.send(f":white_check_mark: {target_str.capitalize()} lite mode " +
                        (f"turned `{on_off(mode)}`." if mode is not None else f"returned to " +
-                         (
-                             f"server default `{on_off(self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
-                             f"global default `{on_off(self.db.get_global_default_setting('lite_mode'))}`.")))
+                                                                             (
+                                                                                 f"server default `{on_off(self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
+                                                                                 f"global default `{on_off(self.db.get_global_default_setting('lite_mode'))}`.")))
 
     @extensions.command(name="maxsmileys", aliases=["max"], category="settings",
                         brief="Change the maximum count of smileys I will react to. (Default is 5)",
@@ -379,9 +388,9 @@ class FreeSmileyDealerCog(commands.Cog):
             await ctx.send(f":white_check_mark: {target_str.capitalize()} max smileys count " +
                            (
                                f"changed to `{max_smileys_count}`." if max_smileys_count is not None else f"returned to " +
-                                  (
-                                      f"server default `{self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
-                                      f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
+                                                                                                          (
+                                                                                                              f"server default `{self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
+                                                                                                              f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
 
     @extensions.command(name="blacklist", aliases=["bl"], category="settings", opposite="whitelist",
                         brief="Blacklist a channel from the bot.",
@@ -469,3 +478,9 @@ class FreeSmileyDealerCog(commands.Cog):
         self.setup_smiley_emojis_dict()
         self.db.update_configurations()
         await ctx.send("Finished updating.")
+
+    @commands.command(name="name", aliases=['n'])
+    @commands.check(check_if_bot_admin)
+    async def command_name(self, ctx: commands.Context, emoji_unicode: str):
+        emoji_name = emoji.UNICODE_EMOJI[emoji_unicode]
+        await ctx.send(f"`{emoji_name}`")

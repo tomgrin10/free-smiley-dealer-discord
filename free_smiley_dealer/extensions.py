@@ -1,11 +1,13 @@
 import asyncio
+import datetime
 import logging
 import time
-import datetime
 from typing import *
 
 import discord
+from discord import Guild, TextChannel
 from discord.ext import commands
+from discord.ext.commands import Bot
 
 from database import Database
 
@@ -70,20 +72,22 @@ class BasicBot(commands.Bot):
             self.loop.create_task(self.continuously_change_presence())
 
     async def on_ready(self):
+        def get_member_count_of_guild(guild: Guild) -> int:
+            try:
+                return guild.member_count
+            except AttributeError:
+                return 0
+
         await self.setup_activities()
         logger.info("Bot is ready.")
-        logger.info(f"{len(self.guilds)} guilds:\n{[g.name for g in sorted(self.guilds, key=lambda g: g.member_count, reverse=True)[:50]]}")
+        logger.info(f"Guilds total: {len(self.guilds)}")
+
+        guilds_sorted_by_members = sorted(
+            self.guilds, key=lambda g: get_member_count_of_guild(g), reverse=True)
+        logger.info(f"guilds:\n{[g.name for g in guilds_sorted_by_members[:50]]}")
 
     async def on_error(self, event_method, *args, **kwargs):
         logger.exception("")
-
-    async def log(self, content: str, channel: discord.TextChannel = None):
-        if not channel:
-            channel = self.get_channel(int(self.db.config["log_channel_id"]))
-        content = content.replace("@everyone", "`@everyone`").replace("@here", "`@here`")
-
-        for segment in split_message_for_discord(content):
-            await channel.send(segment)
 
     async def ask_question(self, message: discord.Message, user: discord.User,
                            emojis: Sequence[Union[discord.Emoji, str]] = ('✅', '❌'), *, timeout: int = 60) -> discord.Emoji:
@@ -170,10 +174,18 @@ class BasicBot(commands.Bot):
 
 
 class DiscordChannelLoggingHandler(logging.Handler):
-    def __init__(self, bot: Optional[BasicBot] = None, min_level=logging.INFO):
+    def __init__(self, log_channel_id: int, bot: Optional[BasicBot] = None, min_level=logging.INFO):
         super().__init__()
+        self.log_channel_id = log_channel_id
         self.bot = bot
         self.min_level = min_level
+
+    @staticmethod
+    async def log(bot: Bot, content: str, channel: TextChannel):
+        content = content.replace("@everyone", "`@everyone`").replace("@here", "`@here`")
+
+        for segment in split_message_for_discord(content):
+            await channel.send(segment)
 
     def emit(self, record: logging.LogRecord):
         if record.levelno < self.min_level:
@@ -182,8 +194,12 @@ class DiscordChannelLoggingHandler(logging.Handler):
         if not self.bot or not self.bot.is_ready():
             return
 
+        channel = self.bot.get_channel(self.log_channel_id)
+        if not channel:
+            return
+
         formatted_record = self.format(record)
-        self.bot.loop.create_task(self.bot.log(formatted_record))
+        self.bot.loop.create_task(self.log(self.bot, formatted_record, channel))
 
 
 class CommandConverter(commands.Converter):

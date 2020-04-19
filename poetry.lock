@@ -122,6 +122,17 @@ IDNA = ["idna (>=2.1)"]
 
 [[package]]
 category = "main"
+description = "Emoji for Python"
+name = "emoji"
+optional = false
+python-versions = "*"
+version = "0.5.4"
+
+[package.extras]
+dev = ["nose", "coverage", "coveralls"]
+
+[[package]]
+category = "main"
 description = "simplified environment variable parsing"
 name = "environs"
 optional = false
@@ -378,7 +389,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "3719f5fc9ce4c5de65cfbdaf2d86f5430d3c4a26ad42cdccd900489e0eba1340"
+content-hash = "eff3de558ad37ac0589afbaadbe63065ae1970df1291a475def7c7b0d25a5b17"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -433,6 +444,9 @@ decorator = [
 dnspython = [
     {file = "dnspython-1.16.0-py2.py3-none-any.whl", hash = "sha256:f69c21288a962f4da86e56c4905b49d11aba7938d3d740e80d9e366ee4f1632d"},
     {file = "dnspython-1.16.0.zip", hash = "sha256:36c5e8e38d4369a08b6780b7f27d790a292b2b08eea01607865bf0936c558e01"},
+]
+emoji = [
+    {file = "emoji-0.5.4.tar.gz", hash = "sha256:60652d3a2dcee5b8af8acb097c31776fb6d808027aeb7221830f72cdafefc174"},
 ]
 environs = [
     {file = "environs-7.3.1-py2.py3-none-any.whl", hash = "sha256:9502d78a3b7ea23c211c3a88f4f946d188a7d936c59c3609f9303aeb26cdc58d"},
