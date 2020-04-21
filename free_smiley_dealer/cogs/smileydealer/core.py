@@ -120,7 +120,7 @@ class FreeSmileyDealerCog(commands.Cog):
             await ctx.send(format(f"This command requires you to have `{perm}` permission to use it."))
 
         # User gave bad arguments
-        elif isinstance(error, commands.BadArgument):
+        elif isinstance(error, (commands.BadArgument, commands.CommandNotFound)):
             await ctx.send(format(error))
 
         elif isinstance(error, commands.BadUnionArgument):
@@ -249,6 +249,9 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @command__on_message.error
     async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
+        if isinstance(error, discord.Forbidden):
+            return
+
         raise error
 
     @extensions.command(name="help", aliases=["h"])
