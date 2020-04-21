@@ -170,7 +170,7 @@ class FreeSmileyDealerCog(commands.Cog):
     async def on_message(self, message: discord.Message):
         # Check if message executes command
         ctx: commands.Context = await self.bot.get_context(message)
-        if not ctx.valid:
+        if not ctx.valid and ctx.message.content:
             # Invoke command to answer with appropriate smiley
             new_message = copy.copy(message)
             new_message.content = message.content
@@ -246,6 +246,10 @@ class FreeSmileyDealerCog(commands.Cog):
         # Lite mode
         else:
             await self.react_with_smileys(ctx, smiley_emojis)
+
+    @command__on_message.error
+    async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
+        raise error
 
     @extensions.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context, command: extensions.CommandConverter = None):
