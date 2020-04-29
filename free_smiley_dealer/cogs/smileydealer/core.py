@@ -132,6 +132,9 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Error while executing a command
         elif isinstance(error, commands.CommandInvokeError) or __debug__:
+            if isinstance(error.original, discord.Forbidden):
+                return
+            
             try:
                 await ctx.send(format("An error has occurred."))
             except discord.Forbidden:
@@ -249,7 +252,12 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @command__on_message.error
     async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
+        # Raise on this error
         if isinstance(error, commands.CommandInvokeError):
+            # Except when there's this error in it
+            if isinstance(error.original, discord.Forbidden):
+                return
+
             raise error
 
         return
