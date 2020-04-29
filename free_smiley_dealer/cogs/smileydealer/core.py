@@ -11,6 +11,7 @@ from typing import *
 
 import discord
 import emoji
+from discord import Guild, Emoji
 from discord.ext import commands
 
 import extensions
@@ -86,15 +87,22 @@ class FreeSmileyDealerCog(commands.Cog):
 
         self.bot.remove_command("help")
 
-    def setup_smiley_emojis_dict(self):
+    async def _get_all_smiley_emojis(self) -> AsyncIterator[Emoji]:
+        emoji_guilds: Iterable[Guild] = (
+            self.bot.get_guild(int(guild_id))
+            for guild_id in self.db.config["emoji_guilds_id"])
+
+        for guild in emoji_guilds:
+            for emoji_ in await guild.fetch_emojis():
+                yield emoji_
+
+    async def setup_smiley_emojis_dict(self):
         """
         Set up dictionary of smiley emojis.
         """
-        emoji_guilds = (self.bot.get_guild(int(id)) for id in self.db.config["emoji_guilds_id"])
-        all_smiley_emojis: Generator[discord.Emoji] = sum((guild.emojis for guild in emoji_guilds), tuple())
-
         counter = 0
-        for smiley_emoji, counter in zip(all_smiley_emojis, itertools.count(1)):
+
+        async for smiley_emoji in self._get_all_smiley_emojis():
             smiley_name_parts = split_smiley_emoji_name_into_parts(smiley_emoji.name)
             if smiley_name_parts is None:
                 continue
@@ -102,11 +110,13 @@ class FreeSmileyDealerCog(commands.Cog):
             smiley_name, _ = smiley_name_parts
             self.smiley_emojis_dict.setdefault(smiley_name, []).append(smiley_emoji)
 
+            counter += 1
+
         logger.info(f"Detected {counter} smiley emojis.")
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.setup_smiley_emojis_dict()
+        await self.setup_smiley_emojis_dict()
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -490,7 +500,7 @@ class FreeSmileyDealerCog(commands.Cog):
     @commands.check(check_if_bot_admin)
     async def command_update(self, ctx: commands.Context):
         await ctx.send("Updating...")
-        self.setup_smiley_emojis_dict()
+        await self.setup_smiley_emojis_dict()
         self.db.update_configurations()
         await ctx.send("Finished updating.")
 
