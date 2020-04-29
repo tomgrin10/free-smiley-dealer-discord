@@ -249,10 +249,10 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @command__on_message.error
     async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
-        if isinstance(error, discord.Forbidden):
-            return
+        if isinstance(error, commands.CommandInvokeError):
+            raise error
 
-        raise error
+        return
 
     @extensions.command(name="help", aliases=["h"])
     async def command_help(self, ctx: commands.Context, command: extensions.CommandConverter = None):
