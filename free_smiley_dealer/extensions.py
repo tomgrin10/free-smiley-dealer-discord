@@ -174,32 +174,45 @@ class BasicBot(commands.Bot):
 
 
 class DiscordChannelLoggingHandler(logging.Handler):
-    def __init__(self, log_channel_id: int, bot: Optional[BasicBot] = None, min_level=logging.INFO):
+    def __init__(
+            self,
+            log_channel_id: int,
+            bot: Optional[BasicBot] = None,
+            *, min_level=logging.INFO,
+            log_before_ready: bool = True):
         super().__init__()
         self.log_channel_id = log_channel_id
         self.bot = bot
         self.min_level = min_level
+        self.log_before_ready = log_before_ready
 
-    @staticmethod
-    async def log(bot: Bot, content: str, channel: TextChannel):
+        self.before_ready_logs: List[str] = []
+
+    async def _log(self, bot: Bot, record: logging.LogRecord, channel: TextChannel):
+
+
+        content = self.format(record)
         content = content.replace("@everyone", "`@everyone`").replace("@here", "`@here`")
 
         for segment in split_message_for_discord(content):
             await channel.send(segment)
 
     def emit(self, record: logging.LogRecord):
-        if record.levelno < self.min_level:
+        if record.levelno < self.min_level or not self.bot:
             return
 
-        if not self.bot or not self.bot.is_ready():
-            return
+        if not self.bot.is_ready():
+            if self.log_before_ready:
+                self.before_ready_logs.append(self.format(record))
 
         channel = self.bot.get_channel(self.log_channel_id)
         if not channel:
-            return
+            self.before_ready_logs = []
 
-        formatted_record = self.format(record)
-        self.bot.loop.create_task(self.log(self.bot, formatted_record, channel))
+        for formatted_record in self.before_ready_logs:
+            self.bot.loop.create_task(self._log(self.bot, formatted_record, channel))
+
+        self.bot.loop.create_task(self._log(self.bot, formatted_record, channel))
 
 
 class CommandConverter(commands.Converter):
