@@ -27,3 +27,5 @@ log.txt
 log.txt.*
 
 *.env
+
+.venv/

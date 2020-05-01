@@ -156,11 +156,11 @@ class FreeSmileyDealerCog(commands.Cog):
 
     def get_emoji_name_from_unicode(self, emoji_unicode: str) -> str:
         if emoji_unicode in DISCORD_EMOJI_TO_CODE:
-            emoji_name = DISCORD_EMOJI_TO_CODE[emoji_unicode]
+            emoji_name: str = DISCORD_EMOJI_TO_CODE[emoji_unicode]
         else:
-            emoji_name = emoji.UNICODE_EMOJI[emoji_unicode]
+            emoji_name: str = emoji.UNICODE_EMOJI[emoji_unicode]
 
-        return emoji_name.replace(':', '')
+        return emoji_name.replace(':', '').replace('-', '_')
 
     def get_smiley_name(self, emoji_name: str) -> str:
         # Iterate emojis in data
