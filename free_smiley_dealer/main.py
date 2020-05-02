@@ -4,6 +4,7 @@ import sys
 
 import environs
 import pymongo
+from motor.motor_asyncio import AsyncIOMotorClient
 
 from database import Database
 from extensions import *
@@ -33,11 +34,12 @@ if __name__ == "__main__":
     if not mongodb_uri:
         logger.info('MONGODB_URI environment variable not supplied, '
                     'connecting to localhost.')
-    pymongo_client = pymongo.MongoClient(
+    mongodb_client = AsyncIOMotorClient(
         mongodb_uri,
-        serverSelectionTimeoutMS=3)
+        serverSelectionTimeoutMS=3
+    )
 
-    database = Database(pymongo_client)
+    database = Database(mongodb_client)
     logger.info('Set up mongodb client successfully.')
 
     bot = BasicBot(database)

@@ -3,6 +3,7 @@ from typing import *
 
 import pymongo
 from discord.ext import commands
+from motor.motor_asyncio import AsyncIOMotorClient
 
 
 def is_enabled():
@@ -24,8 +25,8 @@ class Database:
     Class representing a mongodb database
     """
 
-    def __init__(self, pymongo_client: pymongo.MongoClient):
-        self._client = pymongo_client
+    def __init__(self, mongo_client: AsyncIOMotorClient):
+        self._client = mongo_client
         self._db = self._client["smiley_dealer"]
 
         self.static_data = {}
@@ -51,7 +52,7 @@ class Database:
                 return doc
 
         # Get document from database
-        doc = self._db["guilds"].find_one({"_id": str(guild_id)})
+        doc = await self._db["guilds"].find_one({"_id": str(guild_id)})
         self._cache[guild_id] = doc
         self._verify_cache_integrity()
         return doc
@@ -128,7 +129,7 @@ class Database:
         :param guild_id
         :param channel_id: None - If wants to delete the guild default setting
         """
-        self._db["guilds"].update_one(
+        await self._db["guilds"].update_one(
             {"_id": str(guild_id)},
             {"$unset":
                 {f"settings.{str(channel_id) if channel_id else 'default'}.{setting_name}": ""}})
@@ -150,7 +151,7 @@ class Database:
             self._delete_setting(setting_name, guild_id, channel_id)
         else:
             # Change the value of the setting
-            self._db["guilds"].update_one(
+            await self._db["guilds"].update_one(
                 {"_id": str(guild_id)},
                 {f"${operation}":
                     {f"settings.{str(channel_id) if channel_id else 'default'}.{setting_name}": setting_value}},
@@ -161,8 +162,8 @@ class Database:
             self._cache.pop(guild_id)
 
     def update_configurations(self):
-        self.static_data = self._db["configurations"].find_one({"_id": "static_data"})
-        self.config = self._db["configurations"].find_one({"_id": "config"})
+        self.static_data = await self._db["configurations"].find_one({"_id": "static_data"})
+        self.config = await self._db["configurations"].find_one({"_id": "config"})
 
 
 class _Setting:
@@ -179,25 +180,43 @@ class _Setting:
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._change_setting(self.setting_name, new_value, guild_id=self.guild_id, channel_id=self.channel_id)
+        return self.db._change_setting(
+            self.setting_name,
+            new_value,
+            guild_id=self.guild_id,
+            channel_id=self.channel_id)
 
     def delete(self):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._delete_setting(self.setting_name, guild_id=self.guild_id, channel_id=self.channel_id)
+        return self.db._delete_setting(
+            self.setting_name,
+            guild_id=self.guild_id,
+            channel_id=self.channel_id)
 
     def push(self, value: Any):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._change_setting(self.setting_name, value, guild_id=self.guild_id, channel_id=self.channel_id, operation="push")
+        return self.db._change_setting(
+            self.setting_name,
+            value,
+            guild_id=self.guild_id,
+            channel_id=self.channel_id,
+            operation="push")
 
     def pop(self, value: Any):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._change_setting(self.setting_name, value, guild_id=self.guild_id, channel_id=self.channel_id, operation="pull", upsert=False)
+        return self.db._change_setting(
+            self.setting_name,
+            value,
+            guild_id=self.guild_id,
+            channel_id=self.channel_id,
+            operation="pull",
+            upsert=False)
 
     def __contains__(self, value: Any) -> bool:
         data = self.read()
