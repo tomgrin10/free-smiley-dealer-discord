@@ -2,16 +2,15 @@ from __future__ import annotations
 
 import asyncio
 import copy
-import itertools
 import json
 import logging
 import random
 import re
 from typing import *
-from aioitertools import islice, list as aiolist
 
 import discord
 import emoji
+from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
 

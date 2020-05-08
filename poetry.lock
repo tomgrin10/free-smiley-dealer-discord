@@ -332,11 +332,6 @@ optional = false
 python-versions = "*"
 version = "3.10.1"
 
-[package.dependencies]
-[package.dependencies.dnspython]
-optional = true
-version = ">=1.16.0,<1.17.0"
-
 [package.extras]
 encryption = ["pymongocrypt (<2.0.0)"]
 gssapi = ["pykerberos"]
@@ -428,7 +423,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "60752e04a28e46c13af51b324064204de9bbefcd11727d12b1bbc26987b662bb"
+content-hash = "de8616dfa3fd6beddaea48dc34962949125517109db0f5b1a89faf94c334eba0"
 python-versions = "^3.8"
 
 [metadata.files]

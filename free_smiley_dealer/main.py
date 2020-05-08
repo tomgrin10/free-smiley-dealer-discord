@@ -1,15 +1,14 @@
 import logging
-from logging.handlers import RotatingFileHandler
 import sys
+from logging.handlers import RotatingFileHandler
 
 import environs
-import pymongo
 from motor.motor_asyncio import AsyncIOMotorClient
 
+from cogs.dblapi import TopGG
+from cogs.smileydealer import FreeSmileyDealerCog
 from database import Database
 from extensions import *
-from cogs.smileydealer import FreeSmileyDealerCog
-from cogs.dblapi import TopGG
 
 if __name__ == "__main__":
     env = environs.Env()
