@@ -8,6 +8,7 @@ import logging
 import random
 import re
 from typing import *
+from aioitertools import islice, list as aiolist
 
 import discord
 import emoji
@@ -201,7 +202,8 @@ class FreeSmileyDealerCog(commands.Cog):
                 friday_emoji = random.choice(self.smiley_emojis_dict['friday'])
 
                 # Regular mode
-                if not self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id).read():
+                setting = self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id)
+                if not await setting.read():
                     await self.send_smiley_emojis(ctx, [friday_emoji], add_title=False)
 
                 # Lite mode
@@ -245,10 +247,10 @@ class FreeSmileyDealerCog(commands.Cog):
             self.get_smiley_reaction_emoji(smiley_name)
             for smiley_name in smiley_names_generator)
 
-        smiley_emojis = list(
-            itertools.islice(
+        smiley_emojis = await aiolist(
+            islice(
                 (smiley_emoji for smiley_emoji in smiley_emojis_generator if smiley_emoji),
-                self.db.Setting("max_smileys", ctx.guild.id, ctx.channel.id).read()))
+                await self.db.Setting("max_smileys", ctx.guild.id, ctx.channel.id).read()))
 
         # Check if there any emojis in message
         if not smiley_emojis:
@@ -256,7 +258,7 @@ class FreeSmileyDealerCog(commands.Cog):
             return
 
         # Regular mode
-        if not self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id).read():
+        if not await self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id).read():
             await self.send_smiley_emojis(ctx, smiley_emojis)
 
         # Lite mode
@@ -377,16 +379,18 @@ class FreeSmileyDealerCog(commands.Cog):
                 f"Do you want to turn lite mode {on_off(mode)} for the channel or the server default?")
 
         # Update database
-        self.db.Setting("lite_mode", guild_id=ctx.guild.id,
-                        channel_id=target_channel.id if target_channel else None) \
-            .change(mode)
+        setting = self.db.Setting(
+            "lite_mode",
+            guild_id=ctx.guild.id,
+            channel_id=target_channel.id if target_channel else None)
+        await setting.change(mode)
 
         # Send confirmation
         target_str = 'server default' if not target_channel else target_channel.mention
         await ctx.send(f":white_check_mark: {target_str.capitalize()} lite mode " +
                        (f"turned `{on_off(mode)}`." if mode is not None else f"returned to " +
                                                                              (
-                                                                                 f"server default `{on_off(self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
+                                                                                 f"server default `{on_off(await self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
                                                                                  f"global default `{on_off(self.db.get_global_default_setting('lite_mode'))}`.")))
 
     @extensions.command(name="maxsmileys", aliases=["max"], category="settings",
@@ -406,19 +410,19 @@ class FreeSmileyDealerCog(commands.Cog):
                 ctx,
                 f"Do you want to change the max smileys count for the channel or the server default?")
 
-            # Update database
-            self.db.Setting("max_smileys", guild_id=ctx.guild.id,
-                            channel_id=target_channel.id if target_channel else None) \
-                .change(max_smileys_count)
+        # Update database
+        await self.db.Setting("max_smileys", guild_id=ctx.guild.id,
+                              channel_id=target_channel.id if target_channel else None) \
+            .change(max_smileys_count)
 
-            # Send confirmation
-            target_str = 'server default' if not target_channel else target_channel.mention
-            await ctx.send(f":white_check_mark: {target_str.capitalize()} max smileys count " +
-                           (
-                               f"changed to `{max_smileys_count}`." if max_smileys_count is not None else f"returned to " +
-                                                                                                          (
-                                                                                                              f"server default `{self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
-                                                                                                              f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
+        # Send confirmation
+        target_str = 'server default' if not target_channel else target_channel.mention
+        await ctx.send(f":white_check_mark: {target_str.capitalize()} max smileys count " +
+                       (
+                           f"changed to `{max_smileys_count}`." if max_smileys_count is not None else f"returned to " +
+                                                                                                      (
+                                                                                                          f"server default `{await self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
+                                                                                                          f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
 
     @extensions.command(name="blacklist", aliases=["bl"], category="settings", opposite="whitelist",
                         brief="Blacklist a channel from the bot.",
@@ -431,8 +435,8 @@ class FreeSmileyDealerCog(commands.Cog):
             target_channel = ctx.channel
 
         # Update database
-        self.db.Setting("enabled", guild_id=ctx.guild.id,
-                        channel_id=target_channel.id if target_channel else None) \
+        await self.db.Setting("enabled", guild_id=ctx.guild.id,
+                              channel_id=target_channel.id if target_channel else None) \
             .change(False)
 
         target_str = target_channel.mention
@@ -449,7 +453,7 @@ class FreeSmileyDealerCog(commands.Cog):
             target_channel = ctx.channel
 
         # Update database
-        self.db.Setting("enabled", guild_id=ctx.guild.id,
+        await self.db.Setting("enabled", guild_id=ctx.guild.id,
                         channel_id=target_channel.id if target_channel else None) \
             .change(None)
 
@@ -471,8 +475,8 @@ class FreeSmileyDealerCog(commands.Cog):
                 f"Do you mute {target_user.mention} in this channel or server wide?")
 
         # Update database
-        self.db.Setting("muted_users", guild_id=ctx.guild.id,
-                        channel_id=target_channel.id if target_channel else None) \
+        await self.db.Setting("muted_users", guild_id=ctx.guild.id,
+                              channel_id=target_channel.id if target_channel else None) \
             .push(target_user.id)
 
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
@@ -492,8 +496,8 @@ class FreeSmileyDealerCog(commands.Cog):
                                                                   f"Do you unmute {target_user.mention} in this channel or server wide?")
 
         # Update database
-        self.db.Setting("muted_users", guild_id=ctx.guild.id,
-                        channel_id=target_channel.id if target_channel else None) \
+        await self.db.Setting("muted_users", guild_id=ctx.guild.id,
+                              channel_id=target_channel.id if target_channel else None) \
             .pop(target_user.id)
 
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
@@ -504,7 +508,7 @@ class FreeSmileyDealerCog(commands.Cog):
     async def command_update(self, ctx: commands.Context):
         await ctx.send("Updating...")
         await self.setup_smiley_emojis_dict()
-        self.db.update_configurations()
+        await self.db.update_configurations()
         await ctx.send("Finished updating.")
 
     @commands.command(name="name", aliases=['n'])

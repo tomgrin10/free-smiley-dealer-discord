@@ -1,21 +1,28 @@
+import asyncio
 from collections import OrderedDict
 from typing import *
 
-import pymongo
 from discord.ext import commands
 from motor.motor_asyncio import AsyncIOMotorClient
 
 
 def is_enabled():
-    def predicate(ctx: commands.Context):
-        return ctx.cog.db.Setting("enabled", ctx.guild.id, ctx.channel.id).read() is not False
+    async def predicate(ctx: commands.Context):
+        if not ctx.guild:
+            return True
+
+        return await ctx.cog.db.Setting("enabled", ctx.guild.id, ctx.channel.id).read() is not False
 
     return commands.check(predicate)
 
 
 def author_not_muted():
-    def predicate(ctx: commands.Context):
-        return ctx.author.id not in ctx.cog.db.Setting("muted_users", ctx.guild.id, ctx.channel.id)
+    async def predicate(ctx: commands.Context):
+        if not ctx.guild:
+            return True
+
+        muted_users = await ctx.cog.db.Setting("muted_users", ctx.guild.id, ctx.channel.id).read() or []
+        return ctx.author.id not in muted_users
 
     return commands.check(predicate)
 
@@ -31,7 +38,8 @@ class Database:
 
         self.static_data = {}
         self.config = {}
-        self.update_configurations()
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(self.update_configurations())
 
         self._cache = OrderedDict()
         self.data_fixer_upper()
@@ -43,7 +51,7 @@ class Database:
         while len(self._cache) > 20:
             self._cache.popitem()
 
-    def _get_guild_document(self, guild_id, *, cache=True) -> Optional[Dict]:
+    async def _get_guild_document(self, guild_id, *, cache=True) -> Optional[Dict]:
         # Get document from cache
         if cache:
             doc = self._cache.get(guild_id)
@@ -85,7 +93,7 @@ class Database:
 
         return
 
-    def _get_settings_dict(self, guild_id: Optional[int] = None, channel_id: Optional[int] = None):
+    async def _get_settings_dict(self, guild_id: Optional[int] = None, channel_id: Optional[int] = None):
         """
         Gets the settings of the channel, considers default server and global
         :param guild_id: None - If wants to get the global default settings
@@ -95,7 +103,7 @@ class Database:
         if not guild_id:
             return self.static_data["default_settings"]
 
-        guild_data = self._get_guild_document(guild_id)
+        guild_data = await self._get_guild_document(guild_id)
         if not guild_data:
             return self.static_data["default_settings"]
 
@@ -103,7 +111,7 @@ class Database:
         for setting_name in self.static_data["default_settings"]:
             settings[setting_name] = self._get_setting_from_document(setting_name, guild_data, channel_id)
 
-    def _get_setting(self, setting_name: str, guild_id: Optional[int] = None, channel_id: Optional[int] = None) -> Any:
+    async def _get_setting(self, setting_name: str, guild_id: Optional[int] = None, channel_id: Optional[int] = None) -> Any:
         """
         Gets channel-specific/guild-specific or global default setting by name
         :param setting_name: Name of the setting
@@ -114,7 +122,7 @@ class Database:
         if not guild_id:
             return self.get_global_default_setting(setting_name)
 
-        guild_data = self._get_guild_document(guild_id)
+        guild_data = await self._get_guild_document(guild_id)
         value = self._get_setting_from_document(setting_name, guild_data, channel_id)
 
         if value is None:
@@ -122,7 +130,7 @@ class Database:
 
         return value
 
-    def _delete_setting(self, setting_name: str, guild_id: int, channel_id: Optional[int] = None):
+    async def _delete_setting(self, setting_name: str, guild_id: int, channel_id: Optional[int] = None):
         """
         Deletes the specified setting from the database
         :param setting_name: Name of the setting
@@ -134,7 +142,7 @@ class Database:
             {"$unset":
                 {f"settings.{str(channel_id) if channel_id else 'default'}.{setting_name}": ""}})
 
-    def _change_setting(self, setting_name: str, setting_value: Any = None, *, guild_id: int, channel_id: Optional[int] = None,
+    async def _change_setting(self, setting_name: str, setting_value: Any = None, *, guild_id: int, channel_id: Optional[int] = None,
                         operation="set", upsert=True):
         """
         Changes the specified setting to the given value
@@ -148,7 +156,7 @@ class Database:
         :return:
         """
         if setting_value is None:
-            self._delete_setting(setting_name, guild_id, channel_id)
+            await self._delete_setting(setting_name, guild_id, channel_id)
         else:
             # Change the value of the setting
             await self._db["guilds"].update_one(
@@ -161,7 +169,7 @@ class Database:
         if guild_id in self._cache:
             self._cache.pop(guild_id)
 
-    def update_configurations(self):
+    async def update_configurations(self):
         self.static_data = await self._db["configurations"].find_one({"_id": "static_data"})
         self.config = await self._db["configurations"].find_one({"_id": "config"})
 
@@ -173,51 +181,47 @@ class _Setting:
         self.guild_id = guild_id
         self.channel_id = channel_id
 
-    def read(self) -> Any:
-        return self.db._get_setting(self.setting_name, self.guild_id, self.channel_id)
+    async def read(self) -> Any:
+        return await self.db._get_setting(self.setting_name, self.guild_id, self.channel_id)
 
-    def change(self, new_value: Any):
+    async def change(self, new_value: Any):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._change_setting(
+        return await self.db._change_setting(
             self.setting_name,
             new_value,
             guild_id=self.guild_id,
             channel_id=self.channel_id)
 
-    def delete(self):
+    async def delete(self):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._delete_setting(
+        return await self.db._delete_setting(
             self.setting_name,
             guild_id=self.guild_id,
             channel_id=self.channel_id)
 
-    def push(self, value: Any):
+    async def push(self, value: Any):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._change_setting(
+        return await self.db._change_setting(
             self.setting_name,
             value,
             guild_id=self.guild_id,
             channel_id=self.channel_id,
             operation="push")
 
-    def pop(self, value: Any):
+    async def pop(self, value: Any):
         if not self.guild_id:
             raise ValueError("Guild id is not supplied.")
 
-        return self.db._change_setting(
+        return await self.db._change_setting(
             self.setting_name,
             value,
             guild_id=self.guild_id,
             channel_id=self.channel_id,
             operation="pull",
             upsert=False)
-
-    def __contains__(self, value: Any) -> bool:
-        data = self.read()
-        return data and value in data
