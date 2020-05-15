@@ -13,4 +13,4 @@ RUN poetry install --no-dev --no-interaction
 COPY . /app
 
 WORKDIR /app/free_smiley_dealer
-CMD python /app/free_smiley_dealer/main.py
+CMD python -O /app/free_smiley_dealer/main.py

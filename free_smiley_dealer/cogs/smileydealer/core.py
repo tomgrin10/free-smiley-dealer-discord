@@ -144,7 +144,7 @@ class FreeSmileyDealerCog(commands.Cog):
             pass
 
         # Error while executing a command
-        elif isinstance(error, commands.CommandInvokeError) or __debug__:
+        elif isinstance(error, commands.CommandInvokeError):
             if isinstance(error.original, discord.Forbidden):
                 return
             
