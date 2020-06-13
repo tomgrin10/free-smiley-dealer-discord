@@ -1,0 +1,24 @@
+.git/
+
+# Python
+*.pyc
+
+# JetBrains
+.idea/
+
+# Packages
+*.egg
+!/tests/**/*.egg
+/*.egg-info
+/tests/fixtures/**/*.egg-info
+/dist/*
+build
+_build
+.cache
+*.so
+
+# App
+log.txt
+log.txt.*
+
+.venv/
