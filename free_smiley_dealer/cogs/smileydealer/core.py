@@ -10,6 +10,7 @@ from typing import *
 
 import discord
 import emoji
+import nltk
 from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
@@ -163,6 +164,13 @@ class FreeSmileyDealerCog(commands.Cog):
         return emoji_name.replace(':', '').replace('-', '_')
 
     def get_smiley_name(self, emoji_name: str) -> str:
+        """
+        Get the name of the smiley from the name of the emoji.
+        "calendar" -> "friday"
+        "face_vomiting" -> "nauseated"
+        :param emoji_name: Name of the emoji.
+        :return: Name of the smiley (that is in smiley_emojis_dict)
+        """
         # Iterate emojis in data
         for emoji_names in self.db.static_data["smileys"]:
             if emoji_name in emoji_names:
@@ -171,6 +179,12 @@ class FreeSmileyDealerCog(commands.Cog):
         return emoji_name
 
     def get_smiley_reaction_emoji(self, emoji_name: str) -> Optional[discord.Emoji]:
+        """
+        Get the smiley emoji object from the original emoji name.
+        "calendar" -> "friday" emoji object
+        :param emoji_name: Name of the emoji.
+        :return: Smiley emoji object.
+        """
         # Get smiley name from emoji name
         smiley_name = self.get_smiley_name(emoji_name)
         if smiley_name not in self.smiley_emojis_dict:
@@ -195,19 +209,34 @@ class FreeSmileyDealerCog(commands.Cog):
             new_ctx.command = command
             await self.bot.invoke(new_ctx)
 
-    async def friday(self, ctx: commands.Context):
-        if 'friday' in ctx.message.content.lower():
-            if utils.chance(25):
-                friday_emoji = random.choice(self.smiley_emojis_dict['friday'])
+    async def react_to_words(self, ctx: commands.Context):
+        """
+        React to words by chance.
+        Example: If someone types out "FRIDAY", the bot will has a chance
+         to reply with a friday smiley.
+        """
+        words = nltk.word_tokenize(ctx.message.content.lower())
+        chances_dict: int = await self.db.Setting("random_reactions_chances").read()
 
-                # Regular mode
-                setting = self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id)
-                if not await setting.read():
-                    await self.send_smiley_emojis(ctx, [friday_emoji], add_title=False)
+        for random_reaction_name in self.db.static_data["random_reactions"]:
+            if random_reaction_name not in words:
+                continue
 
-                # Lite mode
-                else:
-                    await self.react_with_smileys(ctx, [friday_emoji])
+            chances = chances_dict[random_reaction_name]
+
+            if not utils.chance(chances):
+                continue
+
+            smiley_emoji = self.get_smiley_reaction_emoji(random_reaction_name)
+
+            # Regular mode
+            setting = self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id)
+            if not await setting.read():
+                await self.send_smiley_emojis(ctx, [smiley_emoji], add_title=False)
+
+            # Lite mode
+            else:
+                await self.react_with_emojis(ctx, [smiley_emoji])
 
     async def send_smiley_emojis(
             self,
@@ -222,7 +251,7 @@ class FreeSmileyDealerCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention} {title}")
         await ctx.send(' '.join(str(emoji) for emoji in emojis))
 
-    async def react_with_smileys(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
+    async def react_with_emojis(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
         """
         React with smiley emojis (lite-mode).
         """
@@ -253,7 +282,7 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Check if there any emojis in message
         if not smiley_emojis:
-            await self.friday(ctx)
+            await self.react_to_words(ctx)
             return
 
         # Regular mode
@@ -262,7 +291,7 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Lite mode
         else:
-            await self.react_with_smileys(ctx, smiley_emojis)
+            await self.react_with_emojis(ctx, smiley_emojis)
 
     @command__on_message.error
     async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
