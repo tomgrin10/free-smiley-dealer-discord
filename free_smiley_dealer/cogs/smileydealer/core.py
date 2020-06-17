@@ -506,8 +506,8 @@ class FreeSmileyDealerCog(commands.Cog):
     @commands.check(check_if_bot_admin)
     async def command_update(self, ctx: commands.Context):
         await ctx.send("Updating...")
-        await self.setup_smiley_emojis_dict()
         await self.db.update_configurations()
+        await self.setup_smiley_emojis_dict()
         await ctx.send("Finished updating.")
 
     @commands.command(name="name", aliases=['n'])
