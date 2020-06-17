@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import enum
 import json
 import logging
 import random
@@ -19,7 +20,7 @@ from emojis.emojis import EMOJI_TO_ALIAS
 import extensions
 import utils
 from database import Database, is_enabled, author_not_muted
-from .converters import SettingsDefaultConverter, SettingsChannelConverter
+from .converters import SettingsDefaultConverter, SettingsChannelConverter, EnumConverter
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
@@ -76,6 +77,12 @@ def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple
     if match:
         parts = match.groups()
         return parts[0], int(parts[1])
+
+
+class Mode(enum.Enum):
+    normal = enum.auto()
+    stripped = enum.auto()
+    reaction = enum.auto()
 
 
 class FreeSmileyDealerCog(commands.Cog):
@@ -317,7 +324,9 @@ class FreeSmileyDealerCog(commands.Cog):
     async def command_help(self, ctx: commands.Context, command: extensions.CommandConverter = None):
         def command_to_embed(command: extensions.Command, embed: discord.Embed = None, *,
                              long: bool = False) -> discord.Embed:
-            """Add a field for the command in an embed or create an embed for the command."""
+            """
+            Add a field for the command in an embed or create an embed for the command.
+            """
 
             def command_full_name(c: extensions.Command) -> str:
                 # Setup name
@@ -397,22 +406,23 @@ class FreeSmileyDealerCog(commands.Cog):
                               f"**Join my server!** {self.bot.db.config['support_guild_url']}\n"
                               f"**Donate to keep the bot alive!** {self.bot.db.config['donate_url']}")
 
-    @extensions.command(name="litemode", aliases=["lite"], category="settings",
-                        brief="Litemode is a less spammy way to correct people.\nInstead of sending an image I will react with the smiley.",
-                        usage="[on/off | *default*] [**]")
+    @extensions.command(
+        name="mode", aliases=[], category="settings",
+        brief="Litemode is a less spammy way to correct people.\n"
+              "Instead of sending an image I will react with the smiley.",
+        usage="[on/off | *default*] [**]")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_litemode(self, ctx: commands.Context,
-                               mode: Union[SettingsDefaultConverter, bool],
-                               target_channel: SettingsChannelConverter = "ask"):
-        def on_off(b: bool):
-            return "on" if b else "off"
-
+    async def command_mode(self,
+                           ctx: commands.Context,
+                           mode: Union[Mode, EnumConverter(Mode), SettingsDefaultConverter],
+                           target_channel: SettingsChannelConverter = "ask"):
         if target_channel == "ask":
             # Ask user if he wants change to server or channel
             target_channel = await settings_ask_channel_or_server(
                 ctx,
-                f"Do you want to turn lite mode {on_off(mode)} for the channel or the server default?")
+                f"Do you want to change mode to `{mode.name.lower()}` for "
+                f"the channel or the server default?")
 
         # Update database
         setting = self.db.Setting(
@@ -423,11 +433,19 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Send confirmation
         target_str = 'server default' if not target_channel else target_channel.mention
-        await ctx.send(f":white_check_mark: {target_str.capitalize()} lite mode " +
-                       (f"turned `{on_off(mode)}`." if mode is not None else f"returned to " +
-                                                                             (
-                                                                                 f"server default `{on_off(await self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
-                                                                                 f"global default `{on_off(self.db.get_global_default_setting('lite_mode'))}`.")))
+        confirmation = f":white_check_mark: {target_str.capitalize()} lite mode "
+        if mode is not None:
+            confirmation += f"turned `{on_off(mode)}`."
+        else:
+            confirmation += f"returned to "
+            if target_channel:
+                server_default = await self.db.Setting('lite_mode', ctx.guild.id).read()
+                confirmation += f"server default `{on_off(server_default)}`."
+            else:
+                global_default = await self.db.Setting('lite_mode').read()
+                confirmation += f"global default `{on_off(global_default)}`."
+
+        await ctx.send(confirmation)
 
     @extensions.command(name="maxsmileys", aliases=["max"], category="settings",
                         brief="Change the maximum count of smileys I will react to. (Default is 5)",
