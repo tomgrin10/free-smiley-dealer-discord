@@ -9,11 +9,12 @@ import re
 from typing import *
 
 import discord
-import emoji
 import nltk
 from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
+import emojis
+from emojis.emojis import EMOJI_TO_ALIAS
 
 import extensions
 import utils
@@ -35,7 +36,7 @@ def iterate_emojis_in_string(string: str) -> Iterator[str]:
     """
     List all emojis in a string.
     """
-    return (d['emoji'] for d in emoji.emoji_lis(string))
+    return iter(emojis.get(string))
 
 
 async def settings_ask_channel_or_server(
@@ -159,7 +160,7 @@ class FreeSmileyDealerCog(commands.Cog):
         if emoji_unicode in DISCORD_EMOJI_TO_CODE:
             emoji_name: str = DISCORD_EMOJI_TO_CODE[emoji_unicode]
         else:
-            emoji_name: str = emoji.UNICODE_EMOJI[emoji_unicode]
+            emoji_name: str = EMOJI_TO_ALIAS[emoji_unicode]
 
         return emoji_name.replace(':', '').replace('-', '_')
 
@@ -216,12 +217,19 @@ class FreeSmileyDealerCog(commands.Cog):
          to reply with a friday smiley.
         """
         words = nltk.word_tokenize(ctx.message.content.lower())
-        chances_dict: int = await self.db.Setting("random_reactions_chances").read()
 
-        for random_reaction_name in self.db.static_data["random_reactions"]:
+        chances_dict_setting = self.db.Setting("random_reactions_chances")
+        chances_dict: Optional[Dict[str, int]] = None
+
+        random_reaction_words = (
+            self.db.get_global_default_setting("random_reactions_chances").keys())
+
+        for random_reaction_name in random_reaction_words:
             if random_reaction_name not in words:
                 continue
 
+            # Read random_reactions_chances setting if not read yet
+            chances_dict = chances_dict or await chances_dict_setting.read()
             chances = chances_dict[random_reaction_name]
 
             if not utils.chance(chances):
