@@ -141,14 +141,11 @@ IDNA = ["idna (>=2.1)"]
 
 [[package]]
 category = "main"
-description = "Emoji for Python"
-name = "emoji"
+description = "Emojis for Python"
+name = "emojis"
 optional = false
 python-versions = "*"
-version = "0.5.4"
-
-[package.extras]
-dev = ["nose", "coverage", "coveralls"]
+version = "0.5.1"
 
 [[package]]
 category = "main"
@@ -230,14 +227,14 @@ description = "An autocompletion tool for Python that can be used for text edito
 name = "jedi"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-version = "0.17.0"
+version = "0.17.1"
 
 [package.dependencies]
-parso = ">=0.7.0"
+parso = ">=0.7.0,<0.8.0"
 
 [package.extras]
 qa = ["flake8 (3.7.9)"]
-testing = ["colorama", "docopt", "pytest (>=3.9.0,<5.0.0)"]
+testing = ["Django (<3.1)", "colorama", "docopt", "pytest (>=3.9.0,<5.0.0)"]
 
 [[package]]
 category = "main"
@@ -480,7 +477,7 @@ idna = ">=2.0"
 multidict = ">=4.0"
 
 [metadata]
-content-hash = "2f1a541d3209171d3f1d25c385d1cba3557d202bfb15777e3e49b7c592b61229"
+content-hash = "424a37bdcb66271fd7da05bdf616bd73dcd8c94685306cb7f22d95e73fcbc2e8"
 python-versions = "^3.8"
 
 [metadata.files]
@@ -544,8 +541,9 @@ dnspython = [
     {file = "dnspython-1.16.0-py2.py3-none-any.whl", hash = "sha256:f69c21288a962f4da86e56c4905b49d11aba7938d3d740e80d9e366ee4f1632d"},
     {file = "dnspython-1.16.0.zip", hash = "sha256:36c5e8e38d4369a08b6780b7f27d790a292b2b08eea01607865bf0936c558e01"},
 ]
-emoji = [
-    {file = "emoji-0.5.4.tar.gz", hash = "sha256:60652d3a2dcee5b8af8acb097c31776fb6d808027aeb7221830f72cdafefc174"},
+emojis = [
+    {file = "emojis-0.5.1-py3-none-any.whl", hash = "sha256:a719391df2de34689ce47d78bb302b0f0dc24656b4f83f501725de7b0ee621ee"},
+    {file = "emojis-0.5.1.tar.gz", hash = "sha256:30d0b317fc9ab70b6acdc752a1ed481b2d278f7ca7c68aef222e4cd833e5de7f"},
 ]
 environs = [
     {file = "environs-7.3.1-py2.py3-none-any.whl", hash = "sha256:9502d78a3b7ea23c211c3a88f4f946d188a7d936c59c3609f9303aeb26cdc58d"},
@@ -569,8 +567,8 @@ ipython-genutils = [
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
 jedi = [
-    {file = "jedi-0.17.0-py2.py3-none-any.whl", hash = "sha256:cd60c93b71944d628ccac47df9a60fec53150de53d42dc10a7fc4b5ba6aae798"},
-    {file = "jedi-0.17.0.tar.gz", hash = "sha256:df40c97641cb943661d2db4c33c2e1ff75d491189423249e989bcea4464f3030"},
+    {file = "jedi-0.17.1-py2.py3-none-any.whl", hash = "sha256:1ddb0ec78059e8e27ec9eb5098360b4ea0a3dd840bedf21415ea820c21b40a22"},
+    {file = "jedi-0.17.1.tar.gz", hash = "sha256:807d5d4f96711a2bcfdd5dfa3b1ae6d09aa53832b182090b222b5efb81f52f63"},
 ]
 joblib = [
     {file = "joblib-0.15.1-py3-none-any.whl", hash = "sha256:6825784ffda353cc8a1be573118085789e5b5d29401856b35b756645ab5aecb5"},
