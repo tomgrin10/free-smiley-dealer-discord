@@ -80,9 +80,9 @@ def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple
 
 
 class Mode(enum.Enum):
-    normal = enum.auto()
-    stripped = enum.auto()
-    reaction = enum.auto()
+    normal = 0
+    stripped = 1
+    reaction = 2
 
 
 class FreeSmileyDealerCog(commands.Cog):
