@@ -11,7 +11,6 @@ from database import Database
 from extensions import *
 
 
-
 def main():
     env = environs.Env()
     env.read_env()
