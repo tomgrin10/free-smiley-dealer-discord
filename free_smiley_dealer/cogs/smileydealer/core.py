@@ -7,6 +7,7 @@ import json
 import logging
 import random
 import re
+from contextlib import suppress
 from typing import *
 
 import discord
@@ -137,32 +138,30 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        # Missing permissions to run command
-        if isinstance(error, commands.MissingPermissions):
-            perm = error.missing_perms[0].replace('_', ' ').replace('guild', 'server').title()
-            await ctx.send(format_error(f"This command requires you to have `{perm}` permission to use it."))
+        with suppress(discord.Forbidden):
+            # Missing permissions to run command
+            if isinstance(error, commands.MissingPermissions):
+                perm = error.missing_perms[0].replace('_', ' ').replace('guild', 'server').title()
+                await ctx.send(format_error(f"This command requires you to have `{perm}` permission to use it."))
 
-        # User gave bad arguments
-        elif isinstance(error, (commands.BadArgument, commands.CommandNotFound)):
-            await ctx.send(format_error(error))
+            # User gave bad arguments
+            elif isinstance(error, (commands.BadArgument, commands.CommandNotFound)):
+                await ctx.send(format_error(error))
 
-        elif isinstance(error, commands.BadUnionArgument):
-            await ctx.send(format_error(error.errors[1]))
+            elif isinstance(error, commands.BadUnionArgument):
+                await ctx.send(format_error(error.errors[1]))
 
-        # Ignore error
-        elif isinstance(error, commands.CheckFailure):
-            pass
-
-        # Error while executing a command
-        elif isinstance(error, commands.CommandInvokeError):
-            if isinstance(error.original, discord.Forbidden):
-                return
-            
-            try:
-                await ctx.send(format_error("An error has occurred."))
-            except discord.Forbidden:
+            # Ignore error
+            elif isinstance(error, commands.CheckFailure):
                 pass
-            raise error
+
+            # Error while executing a command
+            elif isinstance(error, commands.CommandInvokeError):
+                if isinstance(error.original, discord.Forbidden):
+                    return
+
+                await ctx.send(format_error("An error has occurred."))
+                raise error
 
     def get_emoji_name_from_unicode(self, emoji_unicode: str) -> str:
         if emoji_unicode in DISCORD_EMOJI_TO_CODE:
@@ -580,8 +579,8 @@ class FreeSmileyDealerCog(commands.Cog):
     @commands.check(check_if_bot_admin)
     async def command_update(self, ctx: commands.Context):
         await ctx.send("Updating...")
-        await self.setup_smiley_emojis_dict()
         await self.db.update_configurations()
+        await self.setup_smiley_emojis_dict()
         await ctx.send("Finished updating.")
 
     @commands.command(name="name", aliases=['n'])
