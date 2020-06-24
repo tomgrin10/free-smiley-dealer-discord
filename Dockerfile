@@ -7,8 +7,8 @@ RUN pip install poetry
 WORKDIR /app
 COPY poetry.lock pyproject.toml /app/
 
-#RUN poetry config virtualenvs.create false
-RUN poetry install --no-dev --no-interaction
+RUN poetry config virtualenvs.in-project true
+RUN poetry install --no-dev
 
 RUN poetry run python -m nltk.downloader punkt
 
