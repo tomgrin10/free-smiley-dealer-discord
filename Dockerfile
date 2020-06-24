@@ -7,10 +7,12 @@ RUN pip install poetry
 WORKDIR /app
 COPY poetry.lock pyproject.toml /app/
 
-RUN poetry config virtualenvs.create false
+#RUN poetry config virtualenvs.create false
 RUN poetry install --no-dev --no-interaction
+
+RUN poetry run python -m nltk.downloader punkt
 
 COPY . /app
 
 WORKDIR /app/free_smiley_dealer
-CMD python -O /app/free_smiley_dealer/main.py
+CMD poetry run python -O /app/free_smiley_dealer/main.py

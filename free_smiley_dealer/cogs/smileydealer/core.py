@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import copy
+import enum
 import json
 import logging
 import random
@@ -10,15 +11,17 @@ from contextlib import suppress
 from typing import *
 
 import discord
-import emoji
+import nltk
 from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
+import emojis
+from emojis.emojis import EMOJI_TO_ALIAS
 
 import extensions
 import utils
 from database import Database, is_enabled, author_not_muted
-from .converters import SettingsDefaultConverter, SettingsChannelConverter
+from .converters import SettingsDefaultConverter, SettingsChannelConverter, create_enum_converter
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
@@ -31,11 +34,16 @@ with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
 logger = logging.getLogger(__name__)
 
 
+def format_error(msg) -> str:
+    """Command error format for user."""
+    return f":x: **{msg}**"
+
+
 def iterate_emojis_in_string(string: str) -> Iterator[str]:
     """
     List all emojis in a string.
     """
-    return (d['emoji'] for d in emoji.emoji_lis(string))
+    return iter(emojis.get(string))
 
 
 async def settings_ask_channel_or_server(
@@ -75,6 +83,12 @@ def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple
     if match:
         parts = match.groups()
         return parts[0], int(parts[1])
+
+
+class Mode(enum.IntEnum):
+    simple = 0
+    title = 1
+    reaction = 2
 
 
 class FreeSmileyDealerCog(commands.Cog):
@@ -124,22 +138,18 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError):
-        def format(msg) -> str:
-            """Command error format for user."""
-            return f":x: **{msg}**"
-
         with suppress(discord.Forbidden):
             # Missing permissions to run command
             if isinstance(error, commands.MissingPermissions):
                 perm = error.missing_perms[0].replace('_', ' ').replace('guild', 'server').title()
-                await ctx.send(format(f"This command requires you to have `{perm}` permission to use it."))
+                await ctx.send(format_error(f"This command requires you to have `{perm}` permission to use it."))
 
             # User gave bad arguments
             elif isinstance(error, (commands.BadArgument, commands.CommandNotFound)):
-                await ctx.send(format(error))
+                await ctx.send(format_error(error))
 
             elif isinstance(error, commands.BadUnionArgument):
-                await ctx.send(format(error.errors[1]))
+                await ctx.send(format_error(error.errors[1]))
 
             # Ignore error
             elif isinstance(error, commands.CheckFailure):
@@ -150,18 +160,25 @@ class FreeSmileyDealerCog(commands.Cog):
                 if isinstance(error.original, discord.Forbidden):
                     return
 
-                await ctx.send(format("An error has occurred."))
+                await ctx.send(format_error("An error has occurred."))
                 raise error
 
     def get_emoji_name_from_unicode(self, emoji_unicode: str) -> str:
         if emoji_unicode in DISCORD_EMOJI_TO_CODE:
             emoji_name: str = DISCORD_EMOJI_TO_CODE[emoji_unicode]
         else:
-            emoji_name: str = emoji.UNICODE_EMOJI[emoji_unicode]
+            emoji_name: str = EMOJI_TO_ALIAS[emoji_unicode]
 
         return emoji_name.replace(':', '').replace('-', '_')
 
     def get_smiley_name(self, emoji_name: str) -> str:
+        """
+        Get the name of the smiley from the name of the emoji.
+        "calendar" -> "friday"
+        "face_vomiting" -> "nauseated"
+        :param emoji_name: Name of the emoji.
+        :return: Name of the smiley (that is in smiley_emojis_dict)
+        """
         # Iterate emojis in data
         for emoji_names in self.db.static_data["smileys"]:
             if emoji_name in emoji_names:
@@ -170,6 +187,12 @@ class FreeSmileyDealerCog(commands.Cog):
         return emoji_name
 
     def get_smiley_reaction_emoji(self, emoji_name: str) -> Optional[discord.Emoji]:
+        """
+        Get the smiley emoji object from the original emoji name.
+        "calendar" -> "friday" emoji object
+        :param emoji_name: Name of the emoji.
+        :return: Smiley emoji object.
+        """
         # Get smiley name from emoji name
         smiley_name = self.get_smiley_name(emoji_name)
         if smiley_name not in self.smiley_emojis_dict:
@@ -194,24 +217,42 @@ class FreeSmileyDealerCog(commands.Cog):
             new_ctx.command = command
             await self.bot.invoke(new_ctx)
 
-    async def friday(self, ctx: commands.Context):
-        if 'friday' in ctx.message.content.lower():
-            if utils.chance(25):
-                friday_emoji = random.choice(self.smiley_emojis_dict['friday'])
+    async def react_to_words(self, ctx: commands.Context):
+        """
+        React to words by chance.
+        Example: If someone types out "FRIDAY", the bot will has a chance
+         to reply with a friday smiley.
+        """
+        words = nltk.word_tokenize(ctx.message.content.lower())
 
-                # Regular mode
-                setting = self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id)
-                if not await setting.read():
-                    await self.send_smiley_emojis(ctx, [friday_emoji], add_title=False)
+        chances_dict_setting = self.db.Setting("random_reactions_chances")
+        chances_dict: Optional[Dict[str, int]] = None
 
-                # Lite mode
-                else:
-                    await self.react_with_smileys(ctx, [friday_emoji])
+        random_reaction_words = (
+            self.db.get_global_default_setting("random_reactions_chances").keys())
+
+        for random_reaction_name in random_reaction_words:
+            if random_reaction_name not in words:
+                continue
+
+            # Read random_reactions_chances setting if not read yet
+            chances_dict = chances_dict or await chances_dict_setting.read()
+            chances = chances_dict[random_reaction_name]
+
+            if not utils.chance(chances):
+                continue
+
+            smiley_emoji = self.get_smiley_reaction_emoji(random_reaction_name)
+
+            await self.send_smileys_based_on_mode(
+                ctx,
+                [smiley_emoji],
+                always_no_title=True)
 
     async def send_smiley_emojis(
             self,
             ctx: commands.Context,
-            emojis: Sequence[discord.Emoji],
+            emojis: Iterable[discord.Emoji],
             *, add_title=True):
         """
         Send smiley emojis with a title (not lite-mode).
@@ -221,12 +262,38 @@ class FreeSmileyDealerCog(commands.Cog):
             await ctx.send(f"{ctx.author.mention} {title}")
         await ctx.send(' '.join(str(emoji) for emoji in emojis))
 
-    async def react_with_smileys(self, ctx: commands.Context, emojis: Sequence[discord.Emoji]):
+    async def react_with_emojis(self, ctx: commands.Context, emojis: Iterable[discord.Emoji]):
         """
         React with smiley emojis (lite-mode).
         """
         for emoji in emojis:
             await ctx.message.add_reaction(emoji)
+
+    async def send_smileys_based_on_mode(
+            self,
+            ctx: commands.Context,
+            smiley_emojis: Iterable[discord.Emoji],
+            *, always_no_title: bool = False):
+        """
+        Send smileys based on mode in settings.
+        :param ctx:
+        :param smiley_emojis:
+        :param always_no_title: Don't add titles, no matter what's the mode.
+        """
+        mode = await self.db.Setting("mode", ctx.guild.id, ctx.channel.id).read()
+
+        # Reaction mode
+        if mode == Mode.reaction:
+            await self.react_with_emojis(ctx, smiley_emojis)
+
+        else:
+            # Simple mode (no titles)
+            if mode == Mode.simple or always_no_title:
+                await self.send_smiley_emojis(ctx, smiley_emojis, add_title=False)
+
+            # Title mode
+            else:  # mode == Mode.title
+                await self.send_smiley_emojis(ctx, smiley_emojis)
 
     @extensions.command(name="_on_message", hidden=True)
     @commands.guild_only()
@@ -252,16 +319,10 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Check if there any emojis in message
         if not smiley_emojis:
-            await self.friday(ctx)
+            await self.react_to_words(ctx)
             return
 
-        # Regular mode
-        if not await self.db.Setting("lite_mode", ctx.guild.id, ctx.channel.id).read():
-            await self.send_smiley_emojis(ctx, smiley_emojis)
-
-        # Lite mode
-        else:
-            await self.react_with_smileys(ctx, smiley_emojis)
+        await self.send_smileys_based_on_mode(ctx, smiley_emojis)
 
     @command__on_message.error
     async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
@@ -279,7 +340,9 @@ class FreeSmileyDealerCog(commands.Cog):
     async def command_help(self, ctx: commands.Context, command: extensions.CommandConverter = None):
         def command_to_embed(command: extensions.Command, embed: discord.Embed = None, *,
                              long: bool = False) -> discord.Embed:
-            """Add a field for the command in an embed or create an embed for the command."""
+            """
+            Add a field for the command in an embed or create an embed for the command.
+            """
 
             def command_full_name(c: extensions.Command) -> str:
                 # Setup name
@@ -351,48 +414,59 @@ class FreeSmileyDealerCog(commands.Cog):
         await ctx.author.send(embed=create_commands_embed(
             title=":gear: Settings",
             description="** You can add `s|server` `c|channel` `#some_channel` to the end of the command to specify where to change setting.\n"
-                        "Example: s!lite on channel",
+                        "**Example:** s!lite on channel",
             colour=0x7bb3b5,
-            command_names=("litemode", "maxsmileys", "blacklist", "mute")))
+            command_names=("mode", "maxsmileys", "blacklist", "mute")))
 
         await ctx.author.send(":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
                               f"**Join my server!** {self.bot.db.config['support_guild_url']}\n"
                               f"**Donate to keep the bot alive!** {self.bot.db.config['donate_url']}")
 
-    @extensions.command(name="litemode", aliases=["lite"], category="settings",
-                        brief="Litemode is a less spammy way to correct people.\nInstead of sending an image I will react with the smiley.",
-                        usage="[on/off | *default*] [**]")
+    @extensions.command(
+        name="mode", aliases=[], category="settings",
+        brief="Change the bot's way of sending smileys. (default is `simple`)\n"
+              "`simple` - Just send the smileys, without nonsense.\n"
+              "`title` - Send the smileys with a nice title and a mention, just for you.\n"
+              "`reaction` - React with the smileys, instead of sending them as a message!",
+        usage="[mode | *default*] [**]")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_litemode(self, ctx: commands.Context,
-                               mode: Union[SettingsDefaultConverter, bool],
-                               target_channel: SettingsChannelConverter = "ask"):
-        def on_off(b: bool):
-            return "on" if b else "off"
-
+    async def command_mode(self,
+                           ctx: commands.Context,
+                           mode: Union[Mode, create_enum_converter(Mode), SettingsDefaultConverter],
+                           target_channel: SettingsChannelConverter = "ask"):
         if target_channel == "ask":
             # Ask user if he wants change to server or channel
             target_channel = await settings_ask_channel_or_server(
                 ctx,
-                f"Do you want to turn lite mode {on_off(mode)} for the channel or the server default?")
+                f"Do you want to change mode to `{mode.name.lower()}` for "
+                f"the channel or the server default?")
 
         # Update database
         setting = self.db.Setting(
-            "lite_mode",
+            "mode",
             guild_id=ctx.guild.id,
             channel_id=target_channel.id if target_channel else None)
         await setting.change(mode)
 
         # Send confirmation
         target_str = 'server default' if not target_channel else target_channel.mention
-        await ctx.send(f":white_check_mark: {target_str.capitalize()} lite mode " +
-                       (f"turned `{on_off(mode)}`." if mode is not None else f"returned to " +
-                                                                             (
-                                                                                 f"server default `{on_off(await self.db.Setting('lite_mode', ctx.guild.id).read())}`." if target_channel else
-                                                                                 f"global default `{on_off(self.db.get_global_default_setting('lite_mode'))}`.")))
+        confirmation = f":white_check_mark: {target_str.capitalize()} mode "
+        if mode is not None:
+            confirmation += f"changed to `{mode.name.lower()}`."
+        else:
+            confirmation += f"returned to "
+            if target_channel:
+                server_default = Mode(await self.db.Setting('mode', ctx.guild.id).read())
+                confirmation += f"server default `{server_default.name.lower()}`."
+            else:
+                global_default = Mode(await self.db.Setting('lite_mode').read())
+                confirmation += f"global default `{global_default.name.lower()}`."
+
+        await ctx.send(confirmation)
 
     @extensions.command(name="maxsmileys", aliases=["max"], category="settings",
-                        brief="Change the maximum count of smileys I will react to. (Default is 5)",
+                        brief="Change the maximum count of smileys I will react to. (default is 10)",
                         usage="[number | *default*] [**]")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
@@ -511,6 +585,8 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @commands.command(name="name", aliases=['n'])
     @commands.check(check_if_bot_admin)
-    async def command_name(self, ctx: commands.Context, emoji_unicode: str):
-        emoji_name = self.get_emoji_name_from_unicode(emoji_unicode)
-        await ctx.send(f"`{emoji_name}`")
+    async def command_name(self, ctx: commands.Context, message_content: str):
+        emojis_iter = iterate_emojis_in_string(message_content)
+        emoji_names = ','.join(f'"{self.get_emoji_name_from_unicode(emoji)}"'
+                               for emoji in emojis_iter)
+        await ctx.send(f"`{emoji_names}`")

@@ -3,7 +3,7 @@ from collections import OrderedDict
 from typing import *
 
 from discord.ext import commands
-from motor.motor_asyncio import AsyncIOMotorClient
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 
 def is_enabled():
@@ -32,9 +32,8 @@ class Database:
     Class representing a mongodb database
     """
 
-    def __init__(self, mongo_client: AsyncIOMotorClient):
-        self._client = mongo_client
-        self._db = self._client["smiley_dealer"]
+    def __init__(self, mongo_db: AsyncIOMotorDatabase):
+        self._db = mongo_db
 
         self.static_data = {}
         self.config = {}
