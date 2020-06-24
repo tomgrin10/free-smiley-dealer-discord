@@ -10,7 +10,7 @@ COPY poetry.lock pyproject.toml /app/
 RUN poetry config virtualenvs.in-project true
 RUN poetry install --no-dev
 
-RUN poetry run python -m nltk.downloader punkt
+RUN poetry run python -m nltk.downloader -d /app/nltk_data punkt
 
 COPY . /app
 
