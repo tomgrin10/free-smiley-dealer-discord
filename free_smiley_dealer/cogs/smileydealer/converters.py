@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional, TypeVar, Type
+from typing import Optional, TypeVar, Type, Generic
 
 import discord
 from discord.ext import commands
@@ -34,15 +34,21 @@ class SettingsChannelConverter(commands.TextChannelConverter):
         return await super().convert(ctx, arg)
 
 
-class EnumConverter(commands.Converter):
-    _EnumType = TypeVar('_EnumType', bound=Enum)
+_EnumConverterType = TypeVar('_EnumConverterType', bound=Enum)
 
-    def __init__(self, enum_type: Type[_EnumType]):
-        self.enum_type = enum_type
 
-    async def convert(self, ctx: commands.Context, arg: str) -> _EnumType:
-        for enum_obj in self.enum_type:
-            enum_obj: Enum
+def create_enum_converter(enum_type: Type[_EnumConverterType]):
+    class EnumConverter(commands.Converter):
+        async def convert(self, ctx: commands.Context, arg: str) -> _EnumConverterType:
+            for enum_obj in enum_type:
+                enum_obj: Enum
 
-            if enum_obj.name.lower().startswith(arg.lower()):
-                return enum_obj
+                if enum_obj.name.lower().startswith(arg.lower()):
+                    return enum_obj
+
+            enum_type_name: str = enum_type.__name__.lower()
+            raise commands.BadArgument(
+                f"Invalid {enum_type_name}. {enum_type_name.capitalize()} options are " +
+                ', '.join(f'`{enum_obj.name.lower()}`' for enum_obj in enum_type))
+
+    return EnumConverter

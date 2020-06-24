@@ -10,7 +10,9 @@ from cogs.smileydealer import FreeSmileyDealerCog
 from database import Database
 from extensions import *
 
-if __name__ == "__main__":
+
+
+def main():
     env = environs.Env()
     env.read_env()
 
@@ -38,7 +40,8 @@ if __name__ == "__main__":
         serverSelectionTimeoutMS=3
     )
 
-    database = Database(mongodb_client)
+    mongodb_database = mongodb_client[env('MONGODB_DB_NAME')]
+    database = Database(mongodb_database)
     logger.info('Set up mongodb client successfully.')
 
     bot = BasicBot(database)
@@ -55,7 +58,11 @@ if __name__ == "__main__":
         else:
             logger.info('MONGODB_URI environment variable not supplied, '
                         'not setting up TopGG cog.')
-            
+
         bot.run(env.str('DISCORD_TOKEN'))
     except Exception as e:
         logger.exception(e)
+
+
+if __name__ == "__main__":
+    main()
