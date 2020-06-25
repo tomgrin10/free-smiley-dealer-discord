@@ -231,6 +231,7 @@ class FreeSmileyDealerCog(commands.Cog):
         random_reaction_words = (
             self.db.get_global_default_setting("random_reactions_chances").keys())
 
+        smiley_emojis = []
         for random_reaction_name in random_reaction_words:
             if random_reaction_name not in words:
                 continue
@@ -242,12 +243,12 @@ class FreeSmileyDealerCog(commands.Cog):
             if not utils.chance(chances):
                 continue
 
-            smiley_emoji = self.get_smiley_reaction_emoji(random_reaction_name)
+            smiley_emojis.append(self.get_smiley_reaction_emoji(random_reaction_name))
 
-            await self.send_smileys_based_on_mode(
-                ctx,
-                [smiley_emoji],
-                always_no_title=True)
+        await self.send_smileys_based_on_mode(
+            ctx,
+            smiley_emojis,
+            always_no_title=True)
 
     async def send_smiley_emojis(
             self,
