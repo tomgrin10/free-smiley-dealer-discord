@@ -245,10 +245,11 @@ class FreeSmileyDealerCog(commands.Cog):
 
             smiley_emojis.append(self.get_smiley_reaction_emoji(random_reaction_name))
 
-        await self.send_smileys_based_on_mode(
-            ctx,
-            smiley_emojis,
-            always_no_title=True)
+        if smiley_emojis:
+            await self.send_smileys_based_on_mode(
+                ctx,
+                smiley_emojis,
+                always_no_title=True)
 
     async def send_smiley_emojis(
             self,
