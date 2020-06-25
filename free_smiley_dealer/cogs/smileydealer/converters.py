@@ -6,11 +6,13 @@ from discord.ext import commands
 
 __all__ = ["SettingsChannelConverter", "SettingsDefaultConverter"]
 
+Default = object()
+
 
 class SettingsDefaultConverter(commands.Converter):
     _DefaultValueType = TypeVar('_DefaultValueType')
 
-    def __init__(self, default_value: _DefaultValueType = None):
+    def __init__(self, default_value: _DefaultValueType = Default):
         self.default_value = default_value
 
     async def convert(self, ctx: commands.Context, arg: str) -> _DefaultValueType:
@@ -35,6 +37,9 @@ class SettingsChannelConverter(commands.TextChannelConverter):
 
 
 _EnumConverterType = TypeVar('_EnumConverterType', bound=Enum)
+
+
+NoValue = object()
 
 
 def create_enum_converter(enum_type: Type[_EnumConverterType]):

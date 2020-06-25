@@ -90,7 +90,7 @@ class BasicBot(commands.Bot):
         logger.exception("")
 
     async def ask_question(self, message: discord.Message, user: discord.User,
-                           emojis: Sequence[Union[discord.Emoji, str]] = ('✅', '❌'), *, timeout: int = 60) -> discord.Emoji:
+                           emojis: Iterable[Union[discord.Emoji, str]] = ('✅', '❌'), *, timeout: int = 60) -> discord.Emoji:
         def check(r: discord.Reaction, u: discord.User):
             return u == user and (r.emoji in emojis or str(r.emoji) in emojis)
 

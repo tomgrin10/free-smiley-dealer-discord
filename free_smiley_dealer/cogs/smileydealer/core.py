@@ -21,7 +21,8 @@ from emojis.emojis import EMOJI_TO_ALIAS
 import extensions
 import utils
 from database import Database, is_enabled, author_not_muted
-from .converters import SettingsDefaultConverter, SettingsChannelConverter, create_enum_converter
+from .converters import SettingsDefaultConverter, SettingsChannelConverter, \
+    create_enum_converter, Default
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
@@ -57,7 +58,12 @@ async def settings_ask_channel_or_server(
 
     question_msg: discord.Message = await ctx.send(msg_content)
     try:
-        answer_emoji = str(await ctx.bot.ask_question(question_msg, ctx.author, emojis=emojis, timeout=20))
+        answer_emoji = str(
+            await ctx.bot.ask_question(
+                question_msg,
+                ctx.author,
+                emojis=emojis, 
+                timeout=20))
     except asyncio.TimeoutError:
         raise commands.BadArgument("Operation cancelled.")
     finally:
@@ -65,6 +71,41 @@ async def settings_ask_channel_or_server(
 
     question_result = {v: k for k, v in emojis_dict.items()}[answer_emoji]
     return None if question_result == discord.Guild else ctx.channel
+
+
+class Mode(enum.IntEnum):
+    simple = 0
+    title = 1
+    reaction = 2
+
+
+async def ask_for_mode(ctx: commands.Context) -> Mode:
+    emojis_dict = {
+        Mode.simple: '🇸',
+        Mode.title: '🇹',
+        Mode.reaction: '🇷'
+    }
+
+    msg_content = (
+        "Do you want the bot to :regional_indicator_s:imply send the smileys, "
+        "add a :regional_indicator_t:itle while doing it, "
+        "or just :regional_indicator_r:eact with them?")
+
+    question_msg: discord.Message = await ctx.send(msg_content)
+    try:
+        answer_emoji = str(
+            await ctx.bot.ask_question(
+                question_msg,
+                ctx.author,
+                emojis=emojis_dict.values(),
+                timeout=20))
+    except asyncio.TimeoutError:
+        raise commands.BadArgument("Operation cancelled.")
+    finally:
+        await question_msg.delete()
+
+    question_result = {v: k for k, v in emojis_dict.items()}[answer_emoji]
+    return question_result
 
 
 def check_if_bot_admin(ctx: commands.Context):
@@ -83,12 +124,6 @@ def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple
     if match:
         parts = match.groups()
         return parts[0], int(parts[1])
-
-
-class Mode(enum.IntEnum):
-    simple = 0
-    title = 1
-    reaction = 2
 
 
 class FreeSmileyDealerCog(commands.Cog):
@@ -433,10 +468,16 @@ class FreeSmileyDealerCog(commands.Cog):
         usage="[mode | *default*] [**]")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_mode(self,
-                           ctx: commands.Context,
-                           mode: Union[Mode, create_enum_converter(Mode), SettingsDefaultConverter],
-                           target_channel: SettingsChannelConverter = "ask"):
+    async def command_mode(
+            self,
+           ctx: commands.Context,
+           mode: Optional[Union[Mode, create_enum_converter(Mode), SettingsDefaultConverter]] = None,
+           target_channel: SettingsChannelConverter = "ask"):
+
+        # Interactively ask mode
+        if mode is None:
+            mode = await ask_for_mode(ctx)
+
         if target_channel == "ask":
             # Ask user if he wants change to server or channel
             target_channel = await settings_ask_channel_or_server(
@@ -454,7 +495,7 @@ class FreeSmileyDealerCog(commands.Cog):
         # Send confirmation
         target_str = 'server default' if not target_channel else target_channel.mention
         confirmation = f":white_check_mark: {target_str.capitalize()} mode "
-        if mode is not None:
+        if mode is not Default:
             confirmation += f"changed to `{mode.name.lower()}`."
         else:
             confirmation += f"returned to "
@@ -493,7 +534,7 @@ class FreeSmileyDealerCog(commands.Cog):
         target_str = 'server default' if not target_channel else target_channel.mention
         await ctx.send(f":white_check_mark: {target_str.capitalize()} max smileys count " +
                        (
-                           f"changed to `{max_smileys_count}`." if max_smileys_count is not None else f"returned to " +
+                           f"changed to `{max_smileys_count}`." if max_smileys_count is not Default else f"returned to " +
                                                                                                       (
                                                                                                           f"server default `{await self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
                                                                                                           f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))

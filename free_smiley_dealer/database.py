@@ -5,6 +5,8 @@ from typing import *
 from discord.ext import commands
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
+from cogs.smileydealer.converters import Default
+
 
 def is_enabled():
     async def predicate(ctx: commands.Context):
@@ -154,7 +156,7 @@ class Database:
         :param upsert:
         :return:
         """
-        if setting_value is None:
+        if setting_value is None or setting_value is Default:
             await self._delete_setting(setting_name, guild_id, channel_id)
         else:
             # Change the value of the setting
