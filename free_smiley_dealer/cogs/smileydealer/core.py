@@ -16,7 +16,7 @@ from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
 import emojis
-from emojis.emojis import EMOJI_TO_ALIAS
+from emojis.emojis import EMOJI_TO_ALIAS, RE_EMOJI_TO_TEXT
 
 import extensions
 import utils
@@ -44,7 +44,7 @@ def iterate_emojis_in_string(string: str) -> Iterator[str]:
     """
     List all emojis in a string.
     """
-    return iter(emojis.get(string))
+    return (match.group() for match in RE_EMOJI_TO_TEXT.finditer(string))
 
 
 async def settings_ask_channel_or_server(
