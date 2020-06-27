@@ -628,7 +628,7 @@ class FreeSmileyDealerCog(commands.Cog):
 
     @commands.command(name="name", aliases=['n'])
     @commands.check(check_if_bot_admin)
-    async def command_name(self, ctx: commands.Context, message_content: str):
+    async def command_name(self, ctx: commands.Context, *, message_content: str):
         emojis_iter = iterate_emojis_in_string(message_content)
         emoji_names = ','.join(f'"{self.get_emoji_name_from_unicode(emoji)}"'
                                for emoji in emojis_iter)
