@@ -16,6 +16,7 @@ from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
 import emojis
+import emojis.db
 from emojis.emojis import EMOJI_TO_ALIAS, RE_EMOJI_TO_TEXT
 
 import extensions
@@ -226,7 +227,7 @@ class FreeSmileyDealerCog(commands.Cog):
         Get the smiley emoji object from the original emoji name.
         "calendar" -> "friday" emoji object
         :param emoji_name: Name of the emoji.
-        :return: Smiley emoji object.
+        :return: Smiley emoji object, or None if not found.
         """
         # Get smiley name from emoji name
         smiley_name = self.get_smiley_name(emoji_name)
@@ -238,6 +239,10 @@ class FreeSmileyDealerCog(commands.Cog):
             return
 
         return random.choice(emojis)
+
+    def get_smiley_emoji_from_emoji(self, emoji_unicode: str) -> Optional[discord.Emoji]:
+        emoji_name = self.get_emoji_name_from_unicode(emoji_unicode)
+        return self.get_smiley_reaction_emoji(emoji_name)
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -294,9 +299,10 @@ class FreeSmileyDealerCog(commands.Cog):
         """
         Send smiley emojis with a title (not lite-mode).
         """
-        title = random.choice(self.db.static_data['titles'])
         if add_title:
+            title = random.choice(self.db.static_data['titles'])
             await ctx.send(f"{ctx.author.mention} {title}")
+
         await ctx.send(' '.join(str(emoji) for emoji in emojis))
 
     async def react_with_emojis(self, ctx: commands.Context, emojis: Iterable[discord.Emoji]):
@@ -633,3 +639,23 @@ class FreeSmileyDealerCog(commands.Cog):
         emoji_names = ','.join(f'"{self.get_emoji_name_from_unicode(emoji)}"'
                                for emoji in emojis_iter)
         await ctx.send(f"`{emoji_names}`")
+
+    @commands.command(name="category", aliases=[''])
+    @commands.check(check_if_bot_admin)
+    async def command_category(self, ctx: commands.Context):
+        await ctx.send(str(emojis.db.get_categories()))
+
+    @commands.command(name="create", aliases=['c'])
+    @commands.check(check_if_bot_admin)
+    async def command_create(self, ctx: commands.Context, *, category: str):
+        category_emojis: Iterable[str] = (
+            emoji.emoji for emoji in
+            emojis.db.get_emojis_by_category(category))
+
+        emojis_with_no_smiley = (
+            emoji for emoji
+            in category_emojis
+            if self.get_smiley_emoji_from_emoji(emoji) is None
+        )
+
+        await ctx.send(' '.join(emojis_with_no_smiley))
