@@ -263,7 +263,8 @@ class FreeSmileyDealerCog(commands.Cog):
         Example: If someone types out "FRIDAY", the bot will has a chance
          to reply with a friday smiley.
         """
-        words = nltk.word_tokenize(ctx.message.content.lower())
+        msg_content = ctx.message.content.lower()
+        words = nltk.word_tokenize(msg_content)
 
         chances_dict_setting = self.db.Setting("random_reactions_chances")
         chances_dict: Optional[Dict[str, int]] = None
@@ -273,7 +274,11 @@ class FreeSmileyDealerCog(commands.Cog):
 
         smiley_emojis = []
         for random_reaction_name in random_reaction_words:
-            if random_reaction_name not in words:
+            if ' ' in random_reaction_name:  # Multiple words
+                if random_reaction_name not in msg_content:
+                    continue
+
+            elif random_reaction_name not in words:  # One word
                 continue
 
             # Read random_reactions_chances setting if not read yet
