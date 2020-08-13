@@ -13,7 +13,7 @@ motor = "^2.1.0"
 aioitertools = "^0.7.0"
 dnspython = "^1.16.0"
 nltk = "^3.5"
-emojis = "^0.5.1"
+emojis = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 ipython = "7.13.0"
