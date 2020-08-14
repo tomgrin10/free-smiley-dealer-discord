@@ -11,19 +11,20 @@ from contextlib import suppress
 from typing import *
 
 import discord
+import emojis
+import emojis.db
 import nltk
 from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
-import emojis
-import emojis.db
-from emojis.emojis import EMOJI_TO_ALIAS, RE_EMOJI_TO_TEXT
+from emojis.emojis import EMOJI_TO_ALIAS
 
 import extensions
 import utils
 from database import Database, is_enabled, author_not_muted
-from .converters import SettingsDefaultConverter, SettingsChannelConverter, \
-    create_enum_converter, Default
+from .converters import (
+    SettingsDefaultConverter, SettingsChannelConverter,
+    create_enum_converter, Default)
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
@@ -45,7 +46,7 @@ def iterate_emojis_in_string(string: str) -> Iterator[str]:
     """
     List all emojis in a string.
     """
-    return (match.group() for match in RE_EMOJI_TO_TEXT.finditer(string))
+    return emojis.iter(string)
 
 
 async def settings_ask_channel_or_server(
@@ -53,7 +54,8 @@ async def settings_ask_channel_or_server(
         msg_content: str) -> Union[Type[discord.Guild], Type[discord.TextChannel]]:
     emojis_dict = {discord.Guild: "🇸", discord.TextChannel: "🇨"}
 
-    msg_content = msg_content.replace("channel", f"{emojis_dict[discord.TextChannel]}hannel").replace(
+    msg_content = msg_content.replace("channel",
+                                      f"{emojis_dict[discord.TextChannel]}hannel").replace(
         "server", f"{emojis_dict[discord.Guild]}erver")
     emojis = sorted(emojis_dict.values(), key=lambda e: msg_content.find(e))
 
@@ -63,7 +65,7 @@ async def settings_ask_channel_or_server(
             await ctx.bot.ask_question(
                 question_msg,
                 ctx.author,
-                emojis=emojis, 
+                emojis=emojis,
                 timeout=20))
     except asyncio.TimeoutError:
         raise commands.BadArgument("Operation cancelled.")
@@ -113,7 +115,8 @@ def check_if_bot_admin(ctx: commands.Context):
     return ctx.author.id in ctx.bot.db.config["admin_users_id"]
 
 
-def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[Tuple[str, int]]:
+def split_smiley_emoji_name_into_parts(smiley_emoji_name: str) -> Optional[
+    Tuple[str, int]]:
     """
     Split smiley emoji name into its two core parts: the name and the index.
     'smiley_12' -> ('smiley', 12)
@@ -177,8 +180,10 @@ class FreeSmileyDealerCog(commands.Cog):
         with suppress(discord.Forbidden):
             # Missing permissions to run command
             if isinstance(error, commands.MissingPermissions):
-                perm = error.missing_perms[0].replace('_', ' ').replace('guild', 'server').title()
-                await ctx.send(format_error(f"This command requires you to have `{perm}` permission to use it."))
+                perm = error.missing_perms[0].replace('_', ' ').replace('guild',
+                                                                        'server').title()
+                await ctx.send(format_error(
+                    f"This command requires you to have `{perm}` permission to use it."))
 
             # User gave bad arguments
             elif isinstance(error, (commands.BadArgument, commands.CommandNotFound)):
@@ -310,7 +315,8 @@ class FreeSmileyDealerCog(commands.Cog):
 
         await ctx.send(' '.join(str(emoji) for emoji in emojis))
 
-    async def react_with_emojis(self, ctx: commands.Context, emojis: Iterable[discord.Emoji]):
+    async def react_with_emojis(self, ctx: commands.Context,
+                                emojis: Iterable[discord.Emoji]):
         """
         React with smiley emojis (lite-mode).
         """
@@ -362,8 +368,10 @@ class FreeSmileyDealerCog(commands.Cog):
 
         smiley_emojis = await aiolist(
             islice(
-                (smiley_emoji for smiley_emoji in smiley_emojis_generator if smiley_emoji),
-                await self.db.Setting("max_smileys", ctx.guild.id, ctx.channel.id).read()))
+                (smiley_emoji for smiley_emoji in smiley_emojis_generator if
+                 smiley_emoji),
+                await self.db.Setting("max_smileys", ctx.guild.id,
+                                      ctx.channel.id).read()))
 
         # Check if there any emojis in message
         if not smiley_emojis:
@@ -373,7 +381,8 @@ class FreeSmileyDealerCog(commands.Cog):
         await self.send_smileys_based_on_mode(ctx, smiley_emojis)
 
     @command__on_message.error
-    async def command__on_message_error(self, ctx: commands.Context, error: commands.CommandError):
+    async def command__on_message_error(self, ctx: commands.Context,
+                                        error: commands.CommandError):
         # Raise on this error
         if isinstance(error, commands.CommandInvokeError):
             # Except when there's this error in it
@@ -385,7 +394,8 @@ class FreeSmileyDealerCog(commands.Cog):
         return
 
     @extensions.command(name="help", aliases=["h"])
-    async def command_help(self, ctx: commands.Context, command: extensions.CommandConverter = None):
+    async def command_help(self, ctx: commands.Context,
+                           command: extensions.CommandConverter = None):
         def command_to_embed(command: extensions.Command, embed: discord.Embed = None, *,
                              long: bool = False) -> discord.Embed:
             """
@@ -424,7 +434,8 @@ class FreeSmileyDealerCog(commands.Cog):
                     value += f"\n**Examples:** {', '.join(f'{command_call} {example}' for example in command.examples)}"
 
             if embed:
-                embed.add_field(name=name, value=value, inline=not (command.usage or command.help))
+                embed.add_field(name=name, value=value,
+                                inline=not (command.usage or command.help))
                 return embed
             else:
                 return discord.Embed(title=name, description=value)
@@ -466,9 +477,10 @@ class FreeSmileyDealerCog(commands.Cog):
             colour=0x7bb3b5,
             command_names=("mode", "maxsmileys", "blacklist", "mute")))
 
-        await ctx.author.send(":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
-                              f"**Join my server!** {self.bot.db.config['support_guild_url']}\n"
-                              f"**Donate to keep the bot alive!** {self.bot.db.config['donate_url']}")
+        await ctx.author.send(
+            ":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
+            f"**Join my server!** {self.bot.db.config['support_guild_url']}\n"
+            f"**Donate to keep the bot alive!** {self.bot.db.config['donate_url']}")
 
     @extensions.command(
         name="mode", aliases=[], category="settings",
@@ -481,9 +493,10 @@ class FreeSmileyDealerCog(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def command_mode(
             self,
-           ctx: commands.Context,
-           mode: Optional[Union[Mode, create_enum_converter(Mode), SettingsDefaultConverter]] = None,
-           target_channel: SettingsChannelConverter = "ask"):
+            ctx: commands.Context,
+            mode: Optional[Union[
+                Mode, create_enum_converter(Mode), SettingsDefaultConverter]] = None,
+            target_channel: SettingsChannelConverter = "ask"):
 
         # Interactively ask mode
         if mode is None:
@@ -543,20 +556,23 @@ class FreeSmileyDealerCog(commands.Cog):
 
         # Send confirmation
         target_str = 'server default' if not target_channel else target_channel.mention
-        await ctx.send(f":white_check_mark: {target_str.capitalize()} max smileys count " +
-                       (
-                           f"changed to `{max_smileys_count}`." if max_smileys_count is not Default else f"returned to " +
-                                                                                                      (
-                                                                                                          f"server default `{await self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
-                                                                                                          f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
+        await ctx.send(
+            f":white_check_mark: {target_str.capitalize()} max smileys count " +
+            (
+                f"changed to `{max_smileys_count}`." if max_smileys_count is not Default else f"returned to " +
+                                                                                              (
+                                                                                                  f"server default `{await self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
+                                                                                                  f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
 
-    @extensions.command(name="blacklist", aliases=["bl"], category="settings", opposite="whitelist",
+    @extensions.command(name="blacklist", aliases=["bl"], category="settings",
+                        opposite="whitelist",
                         brief="Blacklist a channel from the bot.",
                         usage="[*optional*: channel]",
                         emoji=":mute:")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_blacklist(self, ctx: commands.Context, target_channel: discord.TextChannel = None):
+    async def command_blacklist(self, ctx: commands.Context,
+                                target_channel: discord.TextChannel = None):
         if target_channel is None:
             target_channel = ctx.channel
 
@@ -568,19 +584,21 @@ class FreeSmileyDealerCog(commands.Cog):
         target_str = target_channel.mention
         await ctx.send(f":mute: {target_str.capitalize()} has been blacklisted.")
 
-    @extensions.command(name="whitelist", aliases=["wl", "unblacklist"], category="settings",
+    @extensions.command(name="whitelist", aliases=["wl", "unblacklist"],
+                        category="settings",
                         brief="Un-blacklist a channel from the bot.",
                         usage="[*optional*: channel]",
                         emoji=":speaker:")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_whitelist(self, ctx: commands.Context, target_channel: discord.TextChannel = None):
+    async def command_whitelist(self, ctx: commands.Context,
+                                target_channel: discord.TextChannel = None):
         if target_channel is None:
             target_channel = ctx.channel
 
         # Update database
         await self.db.Setting("enabled", guild_id=ctx.guild.id,
-                        channel_id=target_channel.id if target_channel else None) \
+                              channel_id=target_channel.id if target_channel else None) \
             .change(None)
 
         target_str = target_channel.mention
@@ -606,7 +624,8 @@ class FreeSmileyDealerCog(commands.Cog):
             .push(target_user.id)
 
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
-        await ctx.send(f":mute: {target_user.mention} has been muted {target_channel_str}.")
+        await ctx.send(
+            f":mute: {target_user.mention} has been muted {target_channel_str}.")
 
     @extensions.command(name="unmute", category="settings",
                         brief="Unmute a user from using the bot.",
@@ -627,7 +646,8 @@ class FreeSmileyDealerCog(commands.Cog):
             .pop(target_user.id)
 
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
-        await ctx.send(f":speaker: {target_user.mention} has been unmuted {target_channel_str}.")
+        await ctx.send(
+            f":speaker: {target_user.mention} has been unmuted {target_channel_str}.")
 
     @commands.command(name="update", aliases=["u"])
     @commands.check(check_if_bot_admin)

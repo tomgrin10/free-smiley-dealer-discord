@@ -4,8 +4,6 @@ from typing import Optional, TypeVar, Type, Generic
 import discord
 from discord.ext import commands
 
-__all__ = ["SettingsChannelConverter", "SettingsDefaultConverter"]
-
 Default = object()
 
 
