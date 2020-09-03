@@ -20,7 +20,7 @@ from discord.ext import commands
 from emojis.emojis import EMOJI_TO_ALIAS
 
 import extensions
-from utils import chance, iter_unique_values
+from utils import chance, iter_unique_values, user_full_name
 from database import Database, is_enabled, author_not_muted
 from .converters import (
     SettingsDefaultConverter, SettingsChannelConverter,
@@ -41,6 +41,32 @@ logger = logging.getLogger(__name__)
 def format_error(msg) -> str:
     """Command error format for user."""
     return f":x: **{msg}**"
+
+
+def format_settings_dict(guild_document: Dict[str, Any], bot: extensions.BasicBot) -> str:
+    def format_channel_settings(channel_name: str, settings: Dict[str, Any]):
+        message = f"**{channel_name}**\n"
+        for key, value in settings.items():
+            if key == 'muted_users':
+                users = [
+                    user_full_name(bot.get_user(user_id))
+                    for user_id in value]
+                message += f"{key}: {users}\n"
+            else:
+                message += f"{key}: {value}\n"
+        return message
+
+    guild_document = guild_document['settings']
+
+    message = ""
+    if 'default' in guild_document:
+        message += format_channel_settings('Server Default', guild_document['default'])
+    for channel_id, settings in guild_document.items():
+        if channel_id != "default" and settings:
+            channel: discord.TextChannel = bot.get_channel(int(channel_id))
+            message += format_channel_settings(channel.mention, settings)
+
+    return message
 
 
 def iterate_emojis_in_string(string: str) -> Iterable[str]:
@@ -472,7 +498,7 @@ class FreeSmileyDealerCog(commands.Cog):
             description="** You can add `s|server` `c|channel` `#some_channel` to the end of the command to specify where to change setting.\n"
                         "**Example:** s!lite on channel",
             colour=0x7bb3b5,
-            command_names=("mode", "maxsmileys", "blacklist", "mute")))
+            command_names=('settings', "mode", "maxsmileys", "blacklist", "mute")))
 
         await ctx.author.send(
             ":+1: **Upvote me!** <https://discordbots.org/bot/475418097990500362/vote>\n"
@@ -561,11 +587,13 @@ class FreeSmileyDealerCog(commands.Cog):
                                                                                                   f"server default `{await self.db.Setting('max_smileys', ctx.guild.id).read()}`." if target_channel else
                                                                                                   f"global default `{self.db.get_global_default_setting('max_smileys')}`.")))
 
-    @extensions.command(name="blacklist", aliases=["bl"], category="settings",
-                        opposite="whitelist",
-                        brief="Blacklist a channel from the bot.",
-                        usage="[*optional*: channel]",
-                        emoji=":mute:")
+    @extensions.command(
+        name="blacklist", aliases=["bl"], category="settings",
+        opposite="whitelist",
+        brief="Blacklist a channel from the bot.\n"
+              "`s!bl all` makes all channels blacklisted by default.",
+        usage="[*optional*: channel]",
+        emoji=":mute:")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
     async def command_blacklist(
@@ -629,7 +657,7 @@ class FreeSmileyDealerCog(commands.Cog):
             # Ask user if he wants change to server or channel
             target_channel = await settings_ask_channel_or_server(
                 ctx,
-                f"Do you mute {target_user.mention} in this channel or server wide?")
+                f"Do you mute {target_user.display_name} in this channel or server wide?")
 
         # Update database
         await self.db.Setting("muted_users", guild_id=ctx.guild.id,
@@ -650,8 +678,9 @@ class FreeSmileyDealerCog(commands.Cog):
                              target_channel: SettingsChannelConverter = "ask"):
         if target_channel == "ask":
             # Ask user if he wants change to server or channel
-            target_channel = await settings_ask_channel_or_server(ctx,
-                                                                  f"Do you unmute {target_user.mention} in this channel or server wide?")
+            target_channel = await settings_ask_channel_or_server(
+                ctx,
+                f"Do you unmute {target_user.display_name} in this channel or server wide?")
 
         # Update database
         await self.db.Setting("muted_users", guild_id=ctx.guild.id,
@@ -661,6 +690,16 @@ class FreeSmileyDealerCog(commands.Cog):
         target_channel_str = 'server wide' if not target_channel else f'in {target_channel.mention}'
         await ctx.send(
             f":speaker: {target_user.mention} has been unmuted {target_channel_str}.")
+
+    @extensions.command(name="settings", aliases=['config'], category="settings",
+                        brief="Show the server's bot settings.",
+                        usage="",
+                        emoji=":gear:")
+    @commands.guild_only()
+    @commands.has_permissions(manage_channels=True)
+    async def command_settings(self, ctx: commands.Context):
+        guild_document = await self.db.get_guild_document(ctx.guild.id)
+        await ctx.send(format_settings_dict(guild_document, self.bot))
 
     @commands.command(name="update", aliases=["u"])
     @commands.check(check_if_bot_admin)

@@ -52,7 +52,7 @@ class Database:
         while len(self._cache) > 20:
             self._cache.popitem()
 
-    async def _get_guild_document(self, guild_id, *, cache=True) -> Optional[Dict]:
+    async def get_guild_document(self, guild_id: int, *, cache: bool = True) -> Optional[Dict]:
         # Get document from cache
         if cache:
             doc = self._cache.get(guild_id)
@@ -104,7 +104,7 @@ class Database:
         if not guild_id:
             return self.static_data["default_settings"]
 
-        guild_data = await self._get_guild_document(guild_id)
+        guild_data = await self.get_guild_document(guild_id)
         if not guild_data:
             return self.static_data["default_settings"]
 
@@ -123,7 +123,7 @@ class Database:
         if not guild_id:
             return self.get_global_default_setting(setting_name)
 
-        guild_data = await self._get_guild_document(guild_id)
+        guild_data = await self.get_guild_document(guild_id)
         value = self._get_setting_from_document(setting_name, guild_data, channel_id)
 
         if value is None:

@@ -1,5 +1,7 @@
 import random
 
+import discord
+
 
 def iter_unique_values(iterable):
     seen = set()
@@ -11,3 +13,7 @@ def iter_unique_values(iterable):
 
 def chance(chance_percent: float):
     return random.random() * 100 <= chance_percent
+
+
+def user_full_name(user: discord.User):
+    return f"{user.display_name}#{user.discriminator}"
