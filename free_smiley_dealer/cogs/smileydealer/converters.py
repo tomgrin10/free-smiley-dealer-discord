@@ -5,6 +5,7 @@ import discord
 from discord.ext import commands
 
 Default = object()
+All = object()
 
 
 class SettingsDefaultConverter(commands.Converter):
@@ -32,6 +33,14 @@ class SettingsChannelConverter(commands.TextChannelConverter):
             return None
 
         return await super().convert(ctx, arg)
+
+
+class SettingsAllConverter(commands.TextChannelConverter):
+    async def convert(self, ctx: commands.Context, arg: str) -> All:
+        if arg.lower() == 'all':
+            return All
+        else:
+            raise commands.BadArgument("Not all.")
 
 
 _EnumConverterType = TypeVar('_EnumConverterType', bound=Enum)

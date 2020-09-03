@@ -8,7 +8,8 @@ import logging
 import random
 import re
 from contextlib import suppress
-from typing import *
+from typing import (
+    Type, Iterable, Optional, Dict, Iterator, Sequence, AsyncIterator, Union, Tuple)
 
 import discord
 import emojis
@@ -23,7 +24,7 @@ import utils
 from database import Database, is_enabled, author_not_muted
 from .converters import (
     SettingsDefaultConverter, SettingsChannelConverter,
-    create_enum_converter, Default)
+    create_enum_converter, Default, SettingsAllConverter, All)
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
@@ -42,7 +43,7 @@ def format_error(msg) -> str:
     return f":x: **{msg}**"
 
 
-def iterate_emojis_in_string(string: str) -> Iterator[str]:
+def iterate_emojis_in_string(string: str) -> Iterable[str]:
     """
     List all emojis in a string.
     """
@@ -567,18 +568,26 @@ class FreeSmileyDealerCog(commands.Cog):
                         emoji=":mute:")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_blacklist(self, ctx: commands.Context,
-                                target_channel: discord.TextChannel = None):
+    async def command_blacklist(
+            self,
+            ctx: commands.Context,
+            target_channel: Union[discord.TextChannel, SettingsAllConverter] = None):
         if target_channel is None:
             target_channel = ctx.channel
+
+        if target_channel is All:
+            target_channel = None
 
         # Update database
         await self.db.Setting("enabled", guild_id=ctx.guild.id,
                               channel_id=target_channel.id if target_channel else None) \
             .change(False)
 
-        target_str = target_channel.mention
-        await ctx.send(f":mute: {target_str.capitalize()} has been blacklisted.")
+        if target_channel:
+            target_str = f"{target_channel.mention} has"
+        else:
+            target_str = "All channels have"
+        await ctx.send(f":mute: {target_str.capitalize()} been blacklisted.")
 
     @extensions.command(name="whitelist", aliases=["wl", "unblacklist"],
                         category="settings",
@@ -587,18 +596,26 @@ class FreeSmileyDealerCog(commands.Cog):
                         emoji=":speaker:")
     @commands.guild_only()
     @commands.has_permissions(manage_channels=True)
-    async def command_whitelist(self, ctx: commands.Context,
-                                target_channel: discord.TextChannel = None):
+    async def command_whitelist(
+            self,
+            ctx: commands.Context,
+            target_channel: Union[discord.TextChannel, SettingsAllConverter] = None):
         if target_channel is None:
             target_channel = ctx.channel
+
+        if target_channel is All:
+            target_channel = None
 
         # Update database
         await self.db.Setting("enabled", guild_id=ctx.guild.id,
                               channel_id=target_channel.id if target_channel else None) \
-            .change(None)
+            .change(True)
 
-        target_str = target_channel.mention
-        await ctx.send(f":speaker: {target_str.capitalize()} has been un-blacklisted.")
+        if target_channel:
+            target_str = f"{target_channel.mention} has"
+        else:
+            target_str = "All channels have"
+        await ctx.send(f":mute: {target_str.capitalize()} been un-blacklisted.")
 
     @extensions.command(name="mute", category="settings", opposite="unmute",
                         brief="Mute a user from using the bot.",
