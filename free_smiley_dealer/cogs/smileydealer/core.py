@@ -43,30 +43,45 @@ def format_error(msg) -> str:
     return f":x: **{msg}**"
 
 
-def format_settings_dict(guild_document: Dict[str, Any], bot: extensions.BasicBot) -> str:
-    def format_channel_settings(channel_name: str, settings: Dict[str, Any]):
-        message = f"**{channel_name}**\n"
+def format_settings_dict(
+        global_settings: Dict[str, Any],
+        guild_document: Dict[str, Any],
+        bot: extensions.BasicBot) -> discord.Embed:
+    def format_channel_settings(settings: Dict[str, Any]):
+        message = f""
         for key, value in settings.items():
             if key == 'muted_users':
                 users = [
                     user_full_name(bot.get_user(user_id))
                     for user_id in value]
                 message += f"{key}: {users}\n"
+            elif key == 'mode':
+                message += f"{key}: `{Mode(value).name}`\n"
             else:
-                message += f"{key}: {value}\n"
+                message += f"{key}: `{value}`\n"
         return message
 
     guild_document = guild_document['settings']
 
-    message = ""
+    embed = discord.Embed()
+    embed.add_field(
+        name=':gear: Global Default',
+        value=format_channel_settings(global_settings),
+        inline=False)
     if 'default' in guild_document:
-        message += format_channel_settings('Server Default', guild_document['default'])
+        embed.add_field(
+            name=':gear: Server Default',
+            value=format_channel_settings(guild_document['default']),
+            inline=False)
     for channel_id, settings in guild_document.items():
         if channel_id != "default" and settings:
             channel: discord.TextChannel = bot.get_channel(int(channel_id))
-            message += format_channel_settings(channel.mention, settings)
+            embed.add_field(
+                name=channel.name,
+                value=format_channel_settings(settings),
+                inline=False)
 
-    return message
+    return embed
 
 
 def iterate_emojis_in_string(string: str) -> Iterable[str]:
@@ -699,7 +714,9 @@ class FreeSmileyDealerCog(commands.Cog):
     @commands.has_permissions(manage_channels=True)
     async def command_settings(self, ctx: commands.Context):
         guild_document = await self.db.get_guild_document(ctx.guild.id)
-        await ctx.send(format_settings_dict(guild_document, self.bot))
+        global_settings = self.db.static_data["default_settings"]
+        embed = format_settings_dict(global_settings, guild_document, self.bot)
+        await ctx.send(embed=embed)
 
     @commands.command(name="update", aliases=["u"])
     @commands.check(check_if_bot_admin)
