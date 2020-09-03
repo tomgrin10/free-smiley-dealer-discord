@@ -279,7 +279,7 @@ class FreeSmileyDealerCog(commands.Cog):
         inner_pattern = '|'.join(f'(?:{word})' for word in random_reaction_words)
         regex_pattern = fr'\b{inner_pattern}\b'
         reaction_words = (
-            match.group()
+            match.group().lower()
             for match in re.finditer(regex_pattern, ctx.message.content, re.IGNORECASE))
 
         for random_reaction_name in reaction_words:
