@@ -13,7 +13,6 @@ from typing import *
 import discord
 import emojis
 import emojis.db
-import nltk
 from aioitertools import islice, list as aiolist
 from discord import Guild, Emoji
 from discord.ext import commands
@@ -28,6 +27,7 @@ from .converters import (
 
 # Constants
 DISCORD_EMOJI_CODES_FILENAME = "discord_emoji_codes.json"
+REGEX_FIND_WORD_IN_MESSAGE = re.compile(r'\b{}\b', re.IGNORECASE)
 
 # Load data
 with open(DISCORD_EMOJI_CODES_FILENAME, 'r') as f:
@@ -268,9 +268,6 @@ class FreeSmileyDealerCog(commands.Cog):
         Example: If someone types out "FRIDAY", the bot will has a chance
          to reply with a friday smiley.
         """
-        msg_content = ctx.message.content.lower()
-        words = nltk.word_tokenize(msg_content)
-
         chances_dict_setting = self.db.Setting("random_reactions_chances")
         chances_dict: Optional[Dict[str, int]] = None
 
@@ -278,14 +275,13 @@ class FreeSmileyDealerCog(commands.Cog):
             self.db.get_global_default_setting("random_reactions_chances").keys())
 
         smiley_emojis = []
-        for random_reaction_name in random_reaction_words:
-            if ' ' in random_reaction_name:  # Multiple words
-                if random_reaction_name not in msg_content:
-                    continue
+        inner_pattern = '|'.join(f'(?:{word})' for word in random_reaction_words)
+        regex_pattern = fr'\b{inner_pattern}\b'
+        reaction_words = (
+            match.group()
+            for match in re.finditer(regex_pattern, ctx.message.content, re.IGNORECASE))
 
-            elif random_reaction_name not in words:  # One word
-                continue
-
+        for random_reaction_name in reaction_words:
             # Read random_reactions_chances setting if not read yet
             chances_dict = chances_dict or await chances_dict_setting.read()
             chances = chances_dict[random_reaction_name]
