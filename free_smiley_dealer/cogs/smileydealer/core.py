@@ -9,7 +9,7 @@ import random
 import re
 from contextlib import suppress
 from typing import (
-    Type, Iterable, Optional, Dict, Iterator, Sequence, AsyncIterator, Union, Tuple)
+    Type, Iterable, Optional, Dict, Iterator, Sequence, AsyncIterator, Union, Tuple, Any)
 
 import discord
 import emojis
@@ -20,7 +20,7 @@ from discord.ext import commands
 from emojis.emojis import EMOJI_TO_ALIAS
 
 import extensions
-import utils
+from utils import chance, iter_unique_values
 from database import Database, is_enabled, author_not_muted
 from .converters import (
     SettingsDefaultConverter, SettingsChannelConverter,
@@ -282,12 +282,12 @@ class FreeSmileyDealerCog(commands.Cog):
             match.group().lower()
             for match in re.finditer(regex_pattern, ctx.message.content, re.IGNORECASE))
 
-        for random_reaction_name in reaction_words:
+        for random_reaction_name in iter_unique_values(reaction_words):
             # Read random_reactions_chances setting if not read yet
             chances_dict = chances_dict or await chances_dict_setting.read()
             chances = chances_dict[random_reaction_name]
 
-            if not utils.chance(chances):
+            if not chance(chances):
                 continue
 
             smiley_emojis.append(self.get_smiley_reaction_emoji(random_reaction_name))
@@ -355,7 +355,7 @@ class FreeSmileyDealerCog(commands.Cog):
         if ctx.author == self.bot.user or ctx.author.bot:
             return
 
-        smiley_names_generator = utils.iter_unique_values((
+        smiley_names_generator = iter_unique_values((
             self.get_smiley_name(self.get_emoji_name_from_unicode(emoji_unicode))
             for emoji_unicode in iterate_emojis_in_string(message_content)))
 
