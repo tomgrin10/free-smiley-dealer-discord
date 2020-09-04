@@ -45,7 +45,7 @@ def format_error(msg) -> str:
 
 def format_settings_dict(
         global_settings: Dict[str, Any],
-        guild_document: Dict[str, Any],
+        guild_document: Optional[Dict[str, Any]],
         bot: extensions.BasicBot) -> discord.Embed:
     def format_channel_settings(settings: Dict[str, Any]):
         message = f""
@@ -61,25 +61,26 @@ def format_settings_dict(
                 message += f"{key}: `{value}`\n"
         return message
 
-    guild_document = guild_document['settings']
-
     embed = discord.Embed()
     embed.add_field(
         name=':gear: Global Default',
         value=format_channel_settings(global_settings),
         inline=False)
-    if 'default' in guild_document:
-        embed.add_field(
-            name=':gear: Server Default',
-            value=format_channel_settings(guild_document['default']),
-            inline=False)
-    for channel_id, settings in guild_document.items():
-        if channel_id != "default" and settings:
-            channel: discord.TextChannel = bot.get_channel(int(channel_id))
+
+    if guild_document:
+        guild_document = guild_document['settings']
+        if 'default' in guild_document:
             embed.add_field(
-                name=channel.name,
-                value=format_channel_settings(settings),
+                name=':gear: Server Default',
+                value=format_channel_settings(guild_document['default']),
                 inline=False)
+        for channel_id, settings in guild_document.items():
+            if channel_id != "default" and settings:
+                channel: discord.TextChannel = bot.get_channel(int(channel_id))
+                embed.add_field(
+                    name=channel.name,
+                    value=format_channel_settings(settings),
+                    inline=False)
 
     return embed
 
