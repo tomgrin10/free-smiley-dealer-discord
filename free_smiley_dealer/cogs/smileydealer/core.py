@@ -318,8 +318,7 @@ class FreeSmileyDealerCog(commands.Cog):
             self.db.get_global_default_setting("random_reactions_chances").keys())
 
         smiley_emojis = []
-        inner_pattern = '|'.join(f'(?:{word})' for word in random_reaction_words)
-        regex_pattern = fr'\b{inner_pattern}\b'
+        regex_pattern = '|'.join(fr'(?:\b{word}\b)' for word in random_reaction_words)
         reaction_words = (
             match.group().lower()
             for match in re.finditer(regex_pattern, ctx.message.content, re.IGNORECASE))
