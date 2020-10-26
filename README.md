@@ -1,4 +1,12 @@
-**Free Smiley Dealer - discord bot that makes you regret using unepic paid smileys.** <br>
-This bot will correct people that use paid smileys and suggest them a free smiley alternative.
+# <img src="https://cdn.discordapp.com/emojis/520062583479468033.png" alt="drawing" height="30"/> Free Smiley Dealer <img src="https://cdn.discordapp.com/emojis/520062574205730827.png" alt="drawing" height="30"/>
 
-This bot is not meant for running personally.
+
+Discord bot that replies to your regular stinky emojis, with amazingly cool Free Smileys™.
+
+More than **300 emojis** are supported, and new smileys are constantly being made by the community!
+
+<img src="https://i.ibb.co/bQHD22v/Screenshot-1.png" alt="drawing" height="400"/>
+<br>
+
+## Invite Link
+https://discordapp.com/api/oauth2/authorize?client_id=475418097990500362&permissions=280640&scope=bot
