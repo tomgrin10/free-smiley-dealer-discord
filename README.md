@@ -6,7 +6,6 @@ Discord bot that replies to your regular stinky emojis, with amazingly cool Free
 More than **300 emojis** are supported, and new smileys are constantly being made by the community!
 
 <img src="https://i.ibb.co/bQHD22v/Screenshot-1.png" alt="drawing" height="400"/>
-<br>
 
 ## Invite Link
 https://discordapp.com/api/oauth2/authorize?client_id=475418097990500362&permissions=280640&scope=bot
