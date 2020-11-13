@@ -18,7 +18,7 @@ speedups = ["aiodns", "brotlipy", "cchardet"]
 
 [[package]]
 name = "aioitertools"
-version = "0.7.0"
+version = "0.7.1"
 description = "itertools and builtins for AsyncIO and mixed iterables"
 category = "main"
 optional = false
@@ -390,7 +390,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "0a4be2c5a065101213ba10c44365b5853248777da5beab898fb70b6ecb57978a"
+content-hash = "9566ba4bdfea877c8a7678cc97889e2c0a1cac6287c0e95c7c92ac7d40032cb2"
 
 [metadata.files]
 aiohttp = [
@@ -408,8 +408,8 @@ aiohttp = [
     {file = "aiohttp-3.6.2.tar.gz", hash = "sha256:259ab809ff0727d0e834ac5e8a283dc5e3e0ecc30c4d80b3cd17a4139ce1f326"},
 ]
 aioitertools = [
-    {file = "aioitertools-0.7.0-py3-none-any.whl", hash = "sha256:e931a2f0dcabd4a8446b5cc2fc71b8bb14716e6adf37728a70869213f1f741cd"},
-    {file = "aioitertools-0.7.0.tar.gz", hash = "sha256:341cb05a0903177ef1b73d4cc12c92aee18e81c364e0138f4efc7ec3c47b8177"},
+    {file = "aioitertools-0.7.1-py3-none-any.whl", hash = "sha256:8972308474c41ed5e0636819f948ebff32f2318e70f7e7d23cd208c4357cc773"},
+    {file = "aioitertools-0.7.1.tar.gz", hash = "sha256:54a56c7cf3b5290d1cb5e8974353c9f52c677612b5d69a859369a020c53414a3"},
 ]
 appnope = [
     {file = "appnope-0.1.0-py2.py3-none-any.whl", hash = "sha256:5b26757dc6f79a3b7dc9fab95359328d5747fcb2409d331ea66d0272b90ab2a0"},
