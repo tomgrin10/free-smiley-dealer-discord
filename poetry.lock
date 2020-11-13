@@ -231,7 +231,7 @@ tests = ["pytest", "pytz", "simplejson"]
 
 [[package]]
 name = "motor"
-version = "2.2.0"
+version = "2.3.0"
 description = "Non-blocking MongoDB driver for Tornado or asyncio"
 category = "main"
 optional = false
@@ -390,7 +390,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "0a4be2c5a065101213ba10c44365b5853248777da5beab898fb70b6ecb57978a"
+content-hash = "ac819bda25f8d6e89b15479e03bedd939e3822ff25031b2e47c0985d531db39f"
 
 [metadata.files]
 aiohttp = [
@@ -479,7 +479,8 @@ marshmallow = [
     {file = "marshmallow-3.7.1.tar.gz", hash = "sha256:a2a5eefb4b75a3b43f05be1cca0b6686adf56af7465c3ca629e5ad8d1e1fe13d"},
 ]
 motor = [
-    {file = "motor-2.2.0-py3-none-any.whl", hash = "sha256:659ad13c2e2dca19807fbb6d2bb62e4c60f99bb0d43110a6abb8fdd12b644a64"},
+    {file = "motor-2.3.0-py3-none-any.whl", hash = "sha256:428d94750123d19fcd0a89b8671ff9b4656f205217bad9f44161748c64c5fc80"},
+    {file = "motor-2.3.0.tar.gz", hash = "sha256:f1692b760d834707e3477996ce8d407af8cd61c1a2abedbf81c22ef14675e61a"},
 ]
 multidict = [
     {file = "multidict-4.7.6-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:275ca32383bc5d1894b6975bb4ca6a7ff16ab76fa622967625baeebcf8079000"},
