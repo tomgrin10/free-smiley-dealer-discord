@@ -10,7 +10,7 @@ python = "^3.8"
 dblpy = "^0.2"
 environs = "^9.2.0"
 motor = "^2.1.0"
-aioitertools = "^0.7.0"
+aioitertools = "^0.7.1"
 dnspython = "^1.16.0"
 emojis = "^0.6.0"
 
