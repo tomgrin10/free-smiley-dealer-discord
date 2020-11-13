@@ -82,15 +82,16 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "dblpy"
-version = "0.2"
-description = "A simple API wrapper for discordbots.org written in Python"
+version = "0.4.0"
+description = "A simple API wrapper for top.gg written in Python."
 category = "main"
 optional = false
-python-versions = ">= 3.5"
+python-versions = ">= 3.5.3"
 
 [package.dependencies]
-aiohttp = ">=2.3.9"
-ratelimiter = ">=1.2.0.post0"
+aiohttp = "*"
+"discord.py" = "*"
+ratelimiter = "*"
 
 [[package]]
 name = "decorator"
@@ -390,7 +391,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "0a4be2c5a065101213ba10c44365b5853248777da5beab898fb70b6ecb57978a"
+content-hash = "efa06ccd53d50e3a07f1038d90bfefc3bddc5de8fabdb2a248b0f2ce94a02ab7"
 
 [metadata.files]
 aiohttp = [
@@ -436,7 +437,8 @@ colorama = [
     {file = "colorama-0.4.3.tar.gz", hash = "sha256:e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"},
 ]
 dblpy = [
-    {file = "dblpy-0.2.tar.gz", hash = "sha256:0b44dd264e3feca21d81002a9e9a5ea0655237478e8d654361d659b8581e5bdc"},
+    {file = "dblpy-0.4.0-py3-none-any.whl", hash = "sha256:2d7d746ee7e7b3a2597f485ebf4089e7baabdcf1717743228991bd988c69e1b5"},
+    {file = "dblpy-0.4.0.tar.gz", hash = "sha256:744f5ee9493a945e5907466754b2dce4735715b34daabb9e6264f76ec79818c9"},
 ]
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
