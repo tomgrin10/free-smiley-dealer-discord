@@ -138,7 +138,7 @@ python-versions = "*"
 
 [[package]]
 name = "environs"
-version = "9.2.0"
+version = "9.3.1"
 description = "simplified environment variable parsing"
 category = "main"
 optional = false
@@ -149,9 +149,9 @@ marshmallow = ">=2.7.0"
 python-dotenv = "*"
 
 [package.extras]
-dev = ["pytest", "dj-database-url", "dj-email-url", "django-cache-url", "flake8 (==3.8.4)", "flake8-bugbear (==20.1.4)", "mypy (==0.790)", "pre-commit (>=2.4,<3.0)", "tox"]
+dev = ["pytest", "dj-database-url", "dj-email-url", "django-cache-url", "flake8 (==3.8.4)", "flake8-bugbear (==20.11.1)", "mypy (==0.800)", "pre-commit (>=2.4,<3.0)", "tox"]
 django = ["dj-database-url", "dj-email-url", "django-cache-url"]
-lint = ["flake8 (==3.8.4)", "flake8-bugbear (==20.1.4)", "mypy (==0.790)", "pre-commit (>=2.4,<3.0)"]
+lint = ["flake8 (==3.8.4)", "flake8-bugbear (==20.11.1)", "mypy (==0.800)", "pre-commit (>=2.4,<3.0)"]
 tests = ["pytest", "dj-database-url", "dj-email-url", "django-cache-url"]
 
 [[package]]
@@ -457,8 +457,8 @@ emojis = [
     {file = "emojis-0.6.0.tar.gz", hash = "sha256:bf605d1f1a27a81cd37fe82eb65781c904467f569295a541c33710b97e4225ec"},
 ]
 environs = [
-    {file = "environs-9.2.0-py2.py3-none-any.whl", hash = "sha256:10dca340bff9c912e99d237905909390365e32723c2785a9f3afa6ef426c53bc"},
-    {file = "environs-9.2.0.tar.gz", hash = "sha256:36081033ab34a725c2414f48ee7ec7f7c57e498d8c9255d61fbc7f2d4bf60865"},
+    {file = "environs-9.3.1-py2.py3-none-any.whl", hash = "sha256:2da44b7c30114415aa858577fa6396ee326fc76a0a60f0f15e8260ba554f19dc"},
+    {file = "environs-9.3.1.tar.gz", hash = "sha256:3f6def554abb5455141b540e6e0b72fda3853404f2b0d31658aab1bf95410db3"},
 ]
 idna = [
     {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
