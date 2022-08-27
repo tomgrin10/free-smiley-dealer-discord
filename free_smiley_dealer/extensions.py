@@ -55,7 +55,7 @@ def command(**kwargs):
     return commands.command(cls=Command, **kwargs)
 
 
-class BasicBot(commands.Bot):
+class BasicBot(commands.AutoShardedBot):
     def __init__(self, db: Database, *args, **kwargs):
         self.db = db
 
