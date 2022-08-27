@@ -187,7 +187,9 @@ class FreeSmileyDealerCog(commands.Cog):
     async def _get_all_smiley_emojis(self) -> AsyncIterator[Emoji]:
         emoji_guilds: Iterator[Guild] = (
             self.bot.get_guild(int(guild_id))
-            for guild_id in self.db.config["emoji_guilds_id"])
+            for guild_id in self.db.config["emoji_guilds_id"]
+            if self.bot.get_guild(int(guild_id))
+        )
 
         for guild in emoji_guilds:
             for emoji_ in await guild.fetch_emojis():
@@ -496,6 +498,7 @@ class FreeSmileyDealerCog(commands.Cog):
         def create_commands_embed(*, command_names: Sequence, **kwargs) -> discord.Embed:
             """Create an embed with given commands."""
             embed = discord.Embed(**kwargs)
+
             for command_name in command_names:
                 command_to_embed(ctx.bot.get_command(command_name), embed)
 

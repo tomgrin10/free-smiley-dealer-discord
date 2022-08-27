@@ -56,14 +56,17 @@ def command(**kwargs):
 
 
 class BasicBot(commands.AutoShardedBot):
-    def __init__(self, db: Database, *args, **kwargs):
+    def __init__(self, intents: discord.Intents, db: Database, *args, **kwargs):
         self.db = db
 
         super().__init__(
-            command_prefix=commands.when_mentioned_or(self.db.config["prefix"])
+            command_prefix=commands.when_mentioned_or(self.db.config["prefix"]),
+            intents=intents
         )
 
-        self.add_cog(BasicBot.Commands(self))
+        asyncio.get_event_loop().run_until_complete(
+            self.add_cog(BasicBot.Commands(self))
+        )
 
     async def setup_activities(self):
         await self.wait_until_ready()
@@ -74,7 +77,7 @@ class BasicBot(commands.AutoShardedBot):
     async def on_ready(self):
         def get_member_count_of_guild(guild: Guild) -> int:
             try:
-                return guild.member_count
+                return guild.approximate_member_count or 0
             except AttributeError:
                 return 0
 
