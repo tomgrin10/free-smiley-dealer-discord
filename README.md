@@ -9,3 +9,6 @@ More than **300 emojis** are supported, and new smileys are constantly being mad
 
 ## Invite Link
 https://discordapp.com/api/oauth2/authorize?client_id=475418097990500362&permissions=280640&scope=bot
+
+## Privacy
+View privacy policy [here](/PRIVACY.md).
