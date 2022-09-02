@@ -15,6 +15,7 @@ from extensions import *
 
 nest_asyncio.apply()
 
+
 async def main():
     env = environs.Env()
     env.read_env()
