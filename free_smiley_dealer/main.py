@@ -8,7 +8,6 @@ import environs
 import nest_asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 
-from cogs.dblapi import TopGG
 from cogs.smileydealer import FreeSmileyDealerCog
 from database import Database
 from extensions import *
@@ -57,14 +56,6 @@ async def main():
 
     try:
         await bot.add_cog(FreeSmileyDealerCog(bot, database))
-        dbl_api_key = env.str('DBL_API_KEY', None)
-        if dbl_api_key:
-            logger.info('MONGODB_URI environment variable supplied, '
-                        'setting up TopGG cog.')
-            await bot.add_cog(TopGG(bot, dbl_api_key))
-        else:
-            logger.info('MONGODB_URI environment variable not supplied, '
-                        'not setting up TopGG cog.')
 
         bot.run(env.str('DISCORD_TOKEN'))
     except Exception as e:
