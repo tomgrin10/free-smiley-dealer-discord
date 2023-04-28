@@ -19,19 +19,28 @@ async def main():
     env = environs.Env()
     env.read_env()
 
-    discord_log_handler = DiscordChannelLoggingHandler(env.int('LOG_CHANNEL'))
+    logging_handlers = [
+        logging.StreamHandler(sys.stdout),
+        RotatingFileHandler("log.txt", maxBytes=100_000, backupCount=1)
+    ]
+    if log_channel := env.int('LOG_CHANNEL', None):
+        discord_log_handler = DiscordChannelLoggingHandler(log_channel)
+        logging_handlers.append(discord_log_handler)
+
     # noinspection PyArgumentList
     logging.basicConfig(
         level=logging.INFO,
-        handlers=(
-            discord_log_handler,
-            logging.StreamHandler(sys.stdout),
-            RotatingFileHandler("log.txt", maxBytes=100_000, backupCount=1)),
+        handlers=logging_handlers,
         datefmt="%d-%m-%Y %H:%M:%S",
         format="**{levelname}:** *{asctime}*\n{message}",
         style="{"
     )
     logger = logging.getLogger(__name__)
+
+    if log_channel:
+        logger.info(f"Discord logging channel is set up.")
+    else:
+        logger.info(f"Discord logging channel is not set up.")
 
     logger.info('Setting up mongodb client.')
     mongodb_uri = env.str('MONGODB_URI', None)
@@ -51,7 +60,8 @@ async def main():
     intents.message_content = True
 
     bot = BasicBot(intents, database)
-    discord_log_handler.bot = bot
+    if log_channel:
+        discord_log_handler.bot = bot
     logger.info('Added discord logging handler.')
 
     try:

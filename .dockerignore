@@ -20,5 +20,6 @@ _build
 # App
 log.txt
 log.txt.*
+.env
 
 .venv/
