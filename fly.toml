@@ -1,8 +1,9 @@
-# fly.toml file generated for free-smiley-dealer on 2022-11-19T11:16:13+02:00
+# fly.toml file generated for free-smiley-dealer on 2023-04-28T18:12:58+03:00
 
 app = "free-smiley-dealer"
 kill_signal = "SIGINT"
 kill_timeout = 5
+primary_region = "cdg"
 processes = []
 
 [env]
