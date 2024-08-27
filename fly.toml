@@ -12,6 +12,9 @@ processes = []
   allowed_public_ports = []
   auto_rollback = true
 
+[build]
+  dockerfile = "Dockerfile"
+
 [[services]]
   http_checks = []
   internal_port = 8080
